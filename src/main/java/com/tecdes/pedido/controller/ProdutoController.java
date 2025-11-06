@@ -7,13 +7,30 @@ import com.tecdes.pedido.service.ProdutoService;
 
 public class ProdutoController {
 
-private final ProdutoService service = new ProdutoService();
-    
-public void save(String nome, Double preco){
-    service.SalvarProduto(nome, preco);
-}
+    private final ProdutoService service = new ProdutoService();
 
-// public List<Produto> buscarTodos() {
-//         return service.findAll();
-//     }
-// }
+    // Salva
+    public void save(String nome, Double preco) {
+        service.salvarProduto(nome, preco);
+    }
+
+    // Busca todos
+    public List<Produto> buscarTodos() {
+        return service.buscarTodos();
+    }
+
+     // Busca por Id
+     public Produto findById(int id){
+        return service.buscarPorId(id);
+    }
+
+    // Atualiza
+    public void update(int id, String nome, Double preco){
+        service.atualizarProduto(id, nome, preco);
+    }
+
+    // Deleta
+    public void delete(int id){
+        service.deletarProduto(id);
+    }
+}

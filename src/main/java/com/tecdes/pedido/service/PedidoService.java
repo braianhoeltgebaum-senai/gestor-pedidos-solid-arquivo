@@ -1,7 +1,9 @@
 package com.tecdes.pedido.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import com.tecdes.pedido.model.entity.ItemPedido;
 import com.tecdes.pedido.model.entity.Pedido;
 import com.tecdes.pedido.repository.PedidoRepository;
 import com.tecdes.pedido.repository.PedidoRepositoryImpl;
@@ -29,10 +31,10 @@ public class PedidoService {
         pedido.setValorTotal(valorTotal);
         pedido.setTipoPagamento(tipoPagamento);
 
-        repository.salvar(pedido);
+        repository.save(pedido);
     }
 
     public List<Pedido> buscarTodos() {
-        return repository.buscarTodos();
+        return repository.findAll();
     }
 }
