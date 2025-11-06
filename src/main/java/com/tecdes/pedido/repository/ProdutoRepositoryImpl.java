@@ -47,8 +47,8 @@ public class ProdutoRepositoryImpl implements ProdutoRepository {
                     produto = new Produto(
                         rs.getInt("id_produto"),
                         rs.getString("nome"),
-                        rs.getString("descricao"),
-                        rs.getDouble("preco"),
+                        rs.getDouble("descricao"),
+                        rs.getString("preco"),
                         rs.getString("categoria")
                     );
                 }
@@ -72,8 +72,8 @@ public class ProdutoRepositoryImpl implements ProdutoRepository {
                 produtos.add(new Produto(
                     rs.getInt("id_produto"),
                     rs.getString("nome"),
-                    rs.getString("descricao"),
                     rs.getDouble("preco"),
+                    rs.getString("descricao"),
                     rs.getString("categoria")
                 ));
             }
