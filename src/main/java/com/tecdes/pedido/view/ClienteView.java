@@ -92,12 +92,12 @@ public ClienteView() {
 
   private void carregarTabelaClientes() {
     Object tableModel;
-        ((Object) tableModel).setRowCount(0);
+        // ((Object) tableModel).setRowCount(0); ERRO
 
     try {
       List<Cliente> clientes = controller.listarTodos();
       for (Cliente c: clientes) {
-        DefaultTableColumnModel.addRow(new Object [] {c.getIdCliente(), c.getNome(), c.getFone()});
+        // DefaultTableColumnModel.addRow(new Object [] {c.getIdCliente(), c.getNome(), c.getFone()}); ERRO
       }
     } catch (RuntimeException ex) {
       JOptionPane.showMessageDialog(this, "Erro ao carregar lista: " + ex.getCause(). getMessage(), "Erro de Conexão", JOptionPane.ERROR_MESSAGE);

@@ -114,4 +114,17 @@ public class PedidoRepositoryImpl implements PedidoRepository {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void salvar(Pedido pedido) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'salvar'");
+    }
+
+    
 }
+
+
+
+    
+

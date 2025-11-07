@@ -11,4 +11,7 @@ public interface PedidoRepository {
     List<Pedido> findAll();
     void update(Pedido pedido);
     void delete(int id);
+    void salvar(Pedido pedido);
 }
+
+

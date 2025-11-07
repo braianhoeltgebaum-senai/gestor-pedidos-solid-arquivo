@@ -2,7 +2,7 @@ package com.tecdes.pedido.repository;
 
 import java.util.List;
 
-import com.tecdes.pedido.model.impl.ClienteRepositorylmpl;
+import com.tecdes.pedido.repository.ClienteRepositorylmpl;
 import com.tecdes.pedido.model.entity.Cliente;
 
 public class ClienteRepositorylmpl implements ClienteRepository {
@@ -11,7 +11,7 @@ public class ClienteRepositorylmpl implements ClienteRepository {
 
     @Override
     public void salvar(Cliente cliente) {
-        clienteRepositorylmpl.inserir(cliente);
+        // clienteRepositorylmpl.inserir(cliente); ERRO
     }
 
     @Override
