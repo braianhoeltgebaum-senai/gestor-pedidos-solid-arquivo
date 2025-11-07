@@ -11,7 +11,7 @@ public class PedidoController {
     private final PedidoService service = new PedidoService();
 
     public void salvar(int id, String dataHora) {
-        service.salvarPedido(id, dataHora); 
+        // service.salvarPedido(id, dataHora); 
     }
 
     public List<Pedido> listarTodos() {

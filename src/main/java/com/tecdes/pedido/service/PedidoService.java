@@ -20,15 +20,15 @@ public class PedidoService {
             throw new IllegalArgumentException("O tipo de pagamento é obrigatório.");
         }
 
-        double valorTotal = itens.stream()
-                                 .mapToDouble(ItemPedido::getSubtotal)
-                                 .sum();
+        // double valorTotal = itens.stream()
+        //                          .mapToDouble(ItemPedido::getSubtotal)
+        //                          .sum();
 
         Pedido pedido = new Pedido();
         pedido.setDataHora(LocalDateTime.now());
         pedido.setStatus("PENDENTE");
         pedido.setProdutos(itens);
-        pedido.setValorTotal(valorTotal);
+        // pedido.setValorTotal(valorTotal);
         pedido.setTipoPagamento(tipoPagamento);
 
         repository.save(pedido);
