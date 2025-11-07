@@ -1,111 +1,111 @@
-package com.tecdes.pedido.view;
+// package com.tecdes.pedido.view;
 
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.util.List;
+// import java.awt.BorderLayout;
+// import java.awt.GridLayout;
+// import java.util.List;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.DefaultTableModel;
-import com.tecdes.pedido.controller.ClienteController;
-import com.tecdes.pedido.model.entity.Cliente;
+// import javax.swing.JButton;
+// import javax.swing.JFrame;
+// import javax.swing.JLabel;
+// import javax.swing.JOptionPane;
+// import javax.swing.JPanel;
+// import javax.swing.JScrollPane;
+// import javax.swing.JTable;
+// import javax.swing.JTextField;
+// import javax.swing.table.DefaultTableColumnModel;
+// import javax.swing.table.TableModel;
+// import javax.swing.table.DefaultTableModel;
+// import com.tecdes.pedido.controller.ClienteController;
+// import com.tecdes.pedido.model.entity.Cliente;
 
-public class ClienteView extends JFrame{
+// public class ClienteView extends JFrame{
     
-    private final ClienteController controller = new ClienteController();
+//     private final ClienteController controller = new ClienteController();
 
-    private JTextField txtNome;
-    private JTextField txtFone;
-    private JButton btnSalvar;
+//     private JTextField txtNome;
+//     private JTextField txtFone;
+//     private JButton btnSalvar;
 
-public ClienteView() {
-    super("Cadastro de Pedidos - Lanchonete App");
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    setLayout(new BorderLayout(10, 10));
+// public ClienteView() {
+//     super("Cadastro de Pedidos - Lanchonete App");
+//     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//     setLayout(new BorderLayout(10, 10));
 
-    setupCadastroPainel();
+//     setupCadastroPainel();
 
-    setupListagemPainel();
+//     setupListagemPainel();
 
-    pack();
-    setLocationRelativeTo(null);
-  }
+//     pack();
+//     setLocationRelativeTo(null);
+//   }
 
-  private void setupCadastroPainel() {
-    JPanel panel = new JPanel(new GridLayout(3, 2, 5, 5));
+//   private void setupCadastroPainel() {
+//     JPanel panel = new JPanel(new GridLayout(3, 2, 5, 5));
 
-    txtNome = new JTextField(20);
-    txtFone = new JTextField(13);
-    btnSalvar = new JButton("Salvar Pedido");
+//     txtNome = new JTextField(20);
+//     txtFone = new JTextField(13);
+//     btnSalvar = new JButton("Salvar Pedido");
 
-    panel.add(new JLabel("Nome:"));
-    panel.add(txtNome);
-    panel.add(new JLabel("Telefone (13 dígitos):"));
-    panel.add(txtFone);
-    panel.add(new JLabel());
-    panel.add(btnSalvar);
+//     panel.add(new JLabel("Nome:"));
+//     panel.add(txtNome);
+//     panel.add(new JLabel("Telefone (13 dígitos):"));
+//     panel.add(txtFone);
+//     panel.add(new JLabel());
+//     panel.add(btnSalvar);
 
-    add(panel, BorderLayout.NORTH);
+//     add(panel, BorderLayout.NORTH);
 
-    btnSalvar.addActionListener(e -> salvarPedido());
-  }
+//     btnSalvar.addActionListener(e -> salvarPedido());
+//   }
 
-  private void setupListagemPainel() {
-    DefaultTableColumnModel tableModel = new DefaultTableColumnModel();
-    JTable tblClientes = new JTable((TableModel) tableModel);
-    JScrollPane scrollPane = new JScrollPane(tblClientes);
+//   private void setupListagemPainel() {
+//     DefaultTableColumnModel tableModel = new DefaultTableColumnModel();
+//     JTable tblClientes = new JTable((TableModel) tableModel);
+//     JScrollPane scrollPane = new JScrollPane(tblClientes);
 
-    add(new JLabel("Pedidos Cadastrados: "), BorderLayout.CENTER);
-    add(scrollPane, BorderLayout.SOUTH);
+//     add(new JLabel("Pedidos Cadastrados: "), BorderLayout.CENTER);
+//     add(scrollPane, BorderLayout.SOUTH);
 
-    carregarTabelaClientes();
-  }
+//     carregarTabelaClientes();
+//   }
 
-  private void salvarPedido(){
-    String nome = txtNome.getText();
-    String fone = txtFone.getText();
+//   private void salvarPedido(){
+//     String nome = txtNome.getText();
+//     String fone = txtFone.getText();
 
-    try {
-      controller.salvar(nome, fone);
-      JOptionPane.showMessageDialog(this, "Pedido salvo com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+//     try {
+//       controller.salvar(nome, fone);
+//       JOptionPane.showMessageDialog(this, "Pedido salvo com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
 
-      txtNome.getText();
-      txtFone.getText();
+//       txtNome.getText();
+//       txtFone.getText();
 
-      carregarTabelaClientes();
+//       carregarTabelaClientes();
 
-    } catch (IllegalArgumentException ex) {
-      JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro de Validação", JOptionPane.WARNING_MESSAGE );
-    } catch (RuntimeException ex) {
-      JOptionPane.showMessageDialog(this, "Erro ao salvar: " + ex.getCause().getMessage(), "Erro de Persistência", JOptionPane.ERROR_MESSAGE);
-      ex.printStackTrace();
-    }
-  }
+//     } catch (IllegalArgumentException ex) {
+//       JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro de Validação", JOptionPane.WARNING_MESSAGE );
+//     } catch (RuntimeException ex) {
+//       JOptionPane.showMessageDialog(this, "Erro ao salvar: " + ex.getCause().getMessage(), "Erro de Persistência", JOptionPane.ERROR_MESSAGE);
+//       ex.printStackTrace();
+//     }
+//   }
 
-  private void carregarTabelaClientes() {
-    DefaultTableModel tableModel = (DefaultTableModel) ((JTable) ((JScrollPane) getContentPane().getComponent(2)).getViewport().getView()).getModel();
-         tableModel.setRowCount(0);
+//   private void carregarTabelaClientes() {
+//     DefaultTableModel tableModel = (DefaultTableModel) ((JTable) ((JScrollPane) getContentPane().getComponent(2)).getViewport().getView()).getModel();
+//          tableModel.setRowCount(0);
 
-    try {
-      List<Cliente> clientes = controller.listarTodos();
-      for (Cliente c: clientes) {
-        tableModel.addRow(new Object[]{
-          c.getIdCliente(),
-          c.getNome(),
-          c.getFone()
-        });
-      }
-    } catch (RuntimeException ex) {
-      JOptionPane.showMessageDialog(this, "Erro ao carregar lista: " + 
-      ex.getMessage(), "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
-    }
-  }
-}
+//     try {
+//       List<Cliente> clientes = controller.listarTodos();
+//       for (Cliente c: clientes) {
+//         tableModel.addRow(new Object[]{
+//           c.getIdCliente(),
+//           c.getNome(),
+//           c.getFone()
+//         });
+//       }
+//     } catch (RuntimeException ex) {
+//       JOptionPane.showMessageDialog(this, "Erro ao carregar lista: " + 
+//       ex.getMessage(), "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
+//     }
+//   }
+// }
