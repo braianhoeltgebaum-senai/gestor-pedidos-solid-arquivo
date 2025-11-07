@@ -14,7 +14,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableModel;
-
+import javax.swing.table.DefaultTableModel;
 import com.tecdes.pedido.controller.ClienteController;
 import com.tecdes.pedido.model.entity.Cliente;
 
@@ -91,16 +91,21 @@ public ClienteView() {
   }
 
   private void carregarTabelaClientes() {
-    Object tableModel;
-        ((Object) tableModel).setRowCount(0);
+    DefaultTableModel tableModel = (DefaultTableModel) ((JTable) ((JScrollPane) getContentPane().getComponent(2)).getViewport().getView()).getModel();
+         tableModel.setRowCount(0);
 
     try {
       List<Cliente> clientes = controller.listarTodos();
       for (Cliente c: clientes) {
-        DefaultTableColumnModel.addRow(new Object [] {c.getIdCliente(), c.getNome(), c.getFone()});
+        tableModel.addRow(new Object[]{
+          c.getIdCliente(),
+          c.getNome(),
+          c.getFone()
+        });
       }
     } catch (RuntimeException ex) {
-      JOptionPane.showMessageDialog(this, "Erro ao carregar lista: " + ex.getCause(). getMessage(), "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
+      JOptionPane.showMessageDialog(this, "Erro ao carregar lista: " + 
+      ex.getMessage(), "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
     }
   }
 }
