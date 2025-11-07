@@ -74,7 +74,7 @@ public ClienteView() {
     String fone = txtFone.getText();
 
     try {
-      controller.salvar(nome, fone);
+      // controller.salvar(nome, fone);
       JOptionPane.showMessageDialog(this, "Pedido salvo com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
 
       txtNome.getText();
@@ -95,10 +95,10 @@ public ClienteView() {
         // ((Object) tableModel).setRowCount(0); ERRO
 
     try {
-      List<Cliente> clientes = controller.listarTodos();
-      for (Cliente c: clientes) {
-        // DefaultTableColumnModel.addRow(new Object [] {c.getIdCliente(), c.getNome(), c.getFone()}); ERRO
-      }
+      // List<Cliente> clientes = controller.listarTodos();
+      // for (Cliente c: clientes) {
+      //   // DefaultTableColumnModel.addRow(new Object [] {c.getIdCliente(), c.getNome(), c.getFone()}); ERRO
+      // }
     } catch (RuntimeException ex) {
       JOptionPane.showMessageDialog(this, "Erro ao carregar lista: " + ex.getCause(). getMessage(), "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
     }
