@@ -11,12 +11,17 @@ import com.tecdes.pedido.service.ProdutoService;
 public class ProdutoController {
 
 
-    private final ProdutoService service = new ProdutoService();
+    private final ProdutoService service;
+
+    
+    public ProdutoController(ProdutoService service) {
+        this.service = service;
+    }
 
 
     // Salva
-    public void save(int idProduto, String nome ,  double preco, String categoria, String descricao) {
-        service.salvarProduto(idProduto, nome, preco, categoria, descricao);
+    public void save(String nome ,  double preco, String categoria, String descricao) {
+        service.salvarProduto(nome, preco, categoria, descricao);
     }
 
 
