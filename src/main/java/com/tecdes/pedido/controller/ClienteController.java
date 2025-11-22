@@ -36,4 +36,9 @@ public class ClienteController {
     public void delete(int idCliente){
         service.deletarCliente(idCliente);
     }
+
+    public List<Cliente> listarTodos() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'listarTodos'");
+    }
 }
