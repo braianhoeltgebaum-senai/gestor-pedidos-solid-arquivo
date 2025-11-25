@@ -1,6 +1,5 @@
 package com.tecdes.pedido.model.entity;
 
-import java.util.List;
 
 public class Atendente extends Usuario {
 

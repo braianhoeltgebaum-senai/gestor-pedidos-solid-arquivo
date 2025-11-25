@@ -2,7 +2,6 @@ package com.tecdes.pedido.view;
 
 import com.tecdes.pedido.controller.GerenteController;
 import com.tecdes.pedido.model.entity.Atendente;
-import com.tecdes.pedido.model.entity.Gerente;
 
 import java.util.List;
 import java.util.Scanner;

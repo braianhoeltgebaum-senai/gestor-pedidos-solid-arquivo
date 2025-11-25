@@ -7,7 +7,6 @@ import com.tecdes.pedido.repository.PedidoRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 public class PedidoService {
 

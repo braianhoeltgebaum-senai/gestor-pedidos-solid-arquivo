@@ -1,7 +1,6 @@
 package com.tecdes.pedido.view;
 
 import com.tecdes.pedido.controller.AtendenteController;
-import com.tecdes.pedido.model.entity.Atendente;
 import com.tecdes.pedido.model.entity.Produto;
 import com.tecdes.pedido.model.entity.Pedido;
 
