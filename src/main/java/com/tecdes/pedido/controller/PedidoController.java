@@ -1,36 +1,42 @@
 package com.tecdes.pedido.controller;
 
 import java.util.List;
-import com.tecdes.pedido.model.entity.ItemPedido;
 import com.tecdes.pedido.model.entity.Pedido;
 import com.tecdes.pedido.service.PedidoService;
+import com.tecdes.pedido.service.ProdutoService;
+import com.tecdes.pedido.repository.PedidoRepositoryImpl;
+import com.tecdes.pedido.repository.ProdutoRepositoryImpl;
 
 public class PedidoController {
 
-    private final PedidoService service = new PedidoService();
+    private final PedidoService pedidoService;
+    private final ProdutoService produtoService;
 
-    // Criar Pedido
-    public void save(List<ItemPedido> itens, String status, String tipoPagamento) {
-        service.salvarPedido(itens, status, tipoPagamento);
+    public PedidoController() {
+        ProdutoRepositoryImpl produtoRepo = new ProdutoRepositoryImpl();
+        this.produtoService = new ProdutoService(produtoRepo);
+        
+        PedidoRepositoryImpl pedidoRepo = new PedidoRepositoryImpl();
+        this.pedidoService = new PedidoService(pedidoRepo, this.produtoService);
     }
 
-    // Buscar todos
-    public List<Pedido> buscarTodos() {
-        return service.buscarTodos();
+    public Pedido finalizarPedido(Pedido pedido) {
+        return pedidoService.finalizarPedido(pedido);
     }
 
-    // Buscar por ID
-    public Pedido findById(int id) {
-        return service.buscarPorId(id);
+    public Pedido buscarPedidoPorId(Long id) {
+        return pedidoService.buscarPedidoPorId(id);
     }
 
-    // Atualizar
-    public void update(int id, List<ItemPedido> itens, String status, String tipoPagamento) {
-        service.atualizarPedido(id, itens, status, tipoPagamento);
+    public List<Pedido> buscarTodosPedidos() {
+        return pedidoService.buscarTodosPedidos();
     }
 
-    // Deletar
-    public void delete(int id) {
-        service.deletarPedido(id);
+    public Pedido atualizarStatus(Long id, String novoStatus) {
+        return pedidoService.atualizarStatus(id, novoStatus);
+    }
+
+    public Pedido cancelarPedido(Long id) {
+        return pedidoService.cancelarPedido(id);
     }
 }

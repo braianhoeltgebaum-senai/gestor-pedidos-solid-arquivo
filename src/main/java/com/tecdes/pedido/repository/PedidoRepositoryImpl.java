@@ -1,117 +1,58 @@
 package com.tecdes.pedido.repository;
 
-import com.tecdes.pedido.config.ConnectionFactory;
 import com.tecdes.pedido.model.entity.Pedido;
+import com.tecdes.pedido.model.entity.Cliente;
 
-import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class PedidoRepositoryImpl implements PedidoRepository {
 
-    @Override
-    public void save(Pedido pedido) {
-        String sql = "INSERT INTO pedido (data_hora, status, valor_total, tipo_pagamento) VALUES (?, ?, ?, ?)";
-        
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
-            stmt.setTimestamp(1, Timestamp.valueOf(pedido.getDataHora()));
-            stmt.setString(2, pedido.getStatus());
-            stmt.setDouble(3, pedido.getValorTotal());
-            stmt.setString(4, pedido.getTipoPagamento());
-            
-            stmt.executeUpdate();
-
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    pedido.setId(rs.getInt(1));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+    private final Map<Long, Pedido> database = new HashMap<>();
+    private final AtomicLong idGenerator = new AtomicLong(0); 
 
     @Override
-    public Pedido findById(int id) {
-        Pedido pedido = null;
-        String sql = "SELECT id_pedido, data_hora, status, valor_total, tipo_pagamento FROM pedido WHERE id_pedido = ?";
-        
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    pedido = new Pedido();
-                    pedido.setId(rs.getInt("id_pedido"));
-                    pedido.setDataHora(rs.getTimestamp("data_hora").toLocalDateTime());
-                    pedido.setStatus(rs.getString("status"));
-                    pedido.setValorTotal(rs.getDouble("valor_total"));
-                    pedido.setTipoPagamento(rs.getString("tipo_pagamento"));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+    public Pedido save(Pedido pedido) {
+        if (pedido.getId() == null || pedido.getId() == 0L) {
+            pedido.setId(idGenerator.incrementAndGet());
         }
+        database.put(pedido.getId(), pedido);
+        System.out.println("[DB] Pedido salvo/atualizado: ID " + pedido.getId());
         return pedido;
     }
 
     @Override
+    public Optional<Pedido> findById(Long id) {
+        return Optional.ofNullable(database.get(id));
+    }
+
+    @Override
     public List<Pedido> findAll() {
-        List<Pedido> pedidos = new ArrayList<>();
-        String sql = "SELECT id_pedido, data_hora, status, valor_total, tipo_pagamento FROM pedido";
-        
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            
-            while (rs.next()) {
-                Pedido pedido = new Pedido();
-                pedido.setId(rs.getInt("id_pedido"));
-                pedido.setDataHora(rs.getTimestamp("data_hora").toLocalDateTime());
-                pedido.setStatus(rs.getString("status"));
-                pedido.setValorTotal(rs.getDouble("valor_total"));
-                pedido.setTipoPagamento(rs.getString("tipo_pagamento"));
-                pedidos.add(pedido);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return pedidos;
+        return new ArrayList<>(database.values());
     }
 
     @Override
-    public void update(Pedido pedido) {
-        String sql = "UPDATE pedido SET data_hora = ?, status = ?, valor_total = ?, tipo_pagamento = ? WHERE id_pedido = ?";
+    public List<Pedido> findByCliente(Cliente cliente) {
+        if (cliente == null) return new ArrayList<>();
         
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setTimestamp(1, Timestamp.valueOf(pedido.getDataHora()));
-            stmt.setString(2, pedido.getStatus());
-            stmt.setDouble(3, pedido.getValorTotal());
-            stmt.setString(4, pedido.getTipoPagamento());
-            stmt.setInt(5, pedido.getId());
-            
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        return database.values().stream()
+                .filter(p -> p.getCliente() != null && p.getCliente().getIdCliente().equals(cliente.getIdCliente()))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public void delete(int id) {
-        String sql = "DELETE FROM pedido WHERE id_pedido = ?";
-        
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public List<Pedido> findByStatusAndDataHoraBetween(String status, LocalDateTime dataInicial, LocalDateTime dataFinal) {
+        return database.values().stream()
+                .filter(p -> p.getStatus().equalsIgnoreCase(status))
+                .filter(p -> p.getDataHora() != null && 
+                             !p.getDataHora().isBefore(dataInicial) && 
+                             !p.getDataHora().isAfter(dataFinal))
+                .collect(Collectors.toList());
     }
 }

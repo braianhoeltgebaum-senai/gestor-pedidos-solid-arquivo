@@ -1,80 +1,92 @@
 package com.tecdes.pedido.service;
 
+import com.tecdes.pedido.model.entity.Pedido;
+import com.tecdes.pedido.model.entity.ItemPedido;
+import com.tecdes.pedido.model.entity.Produto;
+import com.tecdes.pedido.repository.PedidoRepository; 
+
 import java.time.LocalDateTime;
 import java.util.List;
-import com.tecdes.pedido.model.entity.ItemPedido;
-import com.tecdes.pedido.model.entity.Pedido;
-import com.tecdes.pedido.repository.PedidoRepository;
-import com.tecdes.pedido.repository.PedidoRepositoryImpl;
+import java.util.Optional;
 
 public class PedidoService {
 
-    private final PedidoRepository repository = new PedidoRepositoryImpl();
+    private final PedidoRepository pedidoRepository;
+    private final ProdutoService produtoService; 
 
-    public void salvarPedido(List<ItemPedido> itens, String status, String tipoPagamento) {
+    public PedidoService(PedidoRepository pedidoRepository, ProdutoService produtoService) {
+        this.pedidoRepository = pedidoRepository;
+        this.produtoService = produtoService;
+    }
 
-        if (itens == null || itens.isEmpty()) {
-            throw new IllegalArgumentException("O pedido deve conter ao menos 1 item.");
-        }
-
-        if (status == null || status.trim().isEmpty()) {
-            throw new IllegalArgumentException("O status do pedido é obrigatório.");
-        }
-
-        if (tipoPagamento == null || tipoPagamento.trim().isEmpty()) {
-            throw new IllegalArgumentException("O tipo de pagamento é obrigatório.");
-        }
-
-        double valorTotal = itens.stream().mapToDouble(
-            i -> i.getQuantidade() * i.getProduto().getPreco()
-        ).sum();
-
-        Pedido pedido = new Pedido();
-        pedido.setDataHora(LocalDateTime.now());
-        pedido.setStatus(status);
-        pedido.setTipoPagamento(tipoPagamento);
-        pedido.setValorTotal(valorTotal);
+    public Pedido finalizarPedido(Pedido novoPedido) {
         
-
-        repository.save(pedido);
-    }
-
-    public List<Pedido> buscarTodos() {
-        return repository.findAll();
-    }
-
-    public Pedido buscarPorId(int id) {
-        Pedido pedido = repository.findById(id);
-        if (pedido == null) {
-            throw new IllegalArgumentException("Pedido não encontrado com ID: " + id);
+        if (novoPedido.getProdutos() == null || novoPedido.getProdutos().isEmpty()) {
+            throw new IllegalArgumentException("O pedido deve conter pelo menos um item.");
         }
-        return pedido;
-    }
+        
+        double total = 0.0;
+        
+        for (ItemPedido item : novoPedido.getProdutos()) { 
+            // 1. Validar e Buscar o Produto no ProdutoService
+            Long idProduto = item.getProduto().getIdProduto(); // Assumindo que ItemPedido.getProduto() retorna o Produto com o ID
+            
+            if (idProduto == null || idProduto <= 0) {
+                 throw new IllegalArgumentException("ID de Produto inválido em um dos itens.");
+            }
+            
+            Produto produto = produtoService.buscarPorId(idProduto); // Chamando o método correto do ProdutoService
+            
+            // 2. Validação da Quantidade
+            if (item.getQuantidade() <= 0) {
+                throw new IllegalArgumentException("Quantidade inválida para o item: " + produto.getNome());
+            }
 
-    public void atualizarPedido(int id, List<ItemPedido> itens, String status, String tipoPagamento) {
-
-        Pedido pedidoExistente = repository.findById(id);
-        if (pedidoExistente == null) {
-            throw new IllegalArgumentException("Pedido não encontrado para atualização. ID: " + id);
+            // 3. Define o preço unitário e calcula o subtotal
+            // Sempre usar o preço atual do produto do banco de dados (produto.getPreco())
+            item.setPrecoUnitario(produto.getPreco()); 
+            
+            total += (item.getPrecoUnitario() * item.getQuantidade());
         }
 
-        double valorTotal = itens.stream().mapToDouble(
-            i -> i.getQuantidade() * i.getProduto().getPreco()
-        ).sum();
+        // 4. Finalização do Pedido
+        novoPedido.setValorTotal(total);
+        novoPedido.setDataHora(LocalDateTime.now());
+        novoPedido.setStatus("Em Processamento");
 
-       
-        pedidoExistente.setStatus(status);
-        pedidoExistente.setTipoPagamento(tipoPagamento);
-        pedidoExistente.setValorTotal(valorTotal);
-
-        repository.update(pedidoExistente);
+        return pedidoRepository.save(novoPedido);
     }
 
-    public void deletarPedido(int id) {
-        Pedido pedido = repository.findById(id);
-        if (pedido == null) {
-            throw new IllegalArgumentException("Pedido não encontrado para exclusão. ID: " + id);
+    public Pedido buscarPedidoPorId(Long id) {
+        return pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido ID " + id + " não encontrado."));
+    }
+
+    public List<Pedido> buscarTodosPedidos() {
+        return pedidoRepository.findAll();
+    }
+    
+    public Pedido atualizarStatus(Long id, String novoStatus) {
+        Pedido pedidoExistente = buscarPedidoPorId(id);
+        
+        // **OPERAÇÃO DE NEGÓCIO BÁSICA**
+        pedidoExistente.setStatus(novoStatus);
+        return pedidoRepository.save(pedidoExistente);
+    }
+    
+    public Pedido cancelarPedido(Long id) {
+        Pedido pedidoExistente = buscarPedidoPorId(id);
+        
+        // **REGRA DE NEGÓCIO**
+        if (pedidoExistente.getStatus().equals("Entregue")) {
+             throw new RuntimeException("Não é possível cancelar um pedido já entregue.");
         }
-        repository.delete(id);
+        
+        pedidoExistente.setStatus("Cancelado");
+        
+        // **OPERAÇÃO DE NEGÓCIO ADICIONAL**
+        // A lógica de estorno/devolução de estoque seria adicionada aqui.
+        
+        return pedidoRepository.save(pedidoExistente);
     }
 }

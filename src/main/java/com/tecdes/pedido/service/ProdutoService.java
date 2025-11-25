@@ -1,92 +1,93 @@
 package com.tecdes.pedido.service;
 
-
-import java.util.List;
-
-
 import com.tecdes.pedido.model.entity.Produto;
 import com.tecdes.pedido.repository.ProdutoRepository;
-import com.tecdes.pedido.repository.ProdutoRepositoryImpl;
 
+import java.util.List;
+import java.util.Optional;
 
 public class ProdutoService {
 
+    private final ProdutoRepository repository;
 
-    private final ProdutoRepository repository = new ProdutoRepositoryImpl();
+    // Construtor para injeção de dependência do Repositório
+    public ProdutoService(ProdutoRepository repository) {
+        this.repository = repository;
+    }
 
-
-      // Valida os campos
-        private void validarCampos(String nome, double preco, String categoria, String descricao) {
+    private void validarDados(String nome, double preco) {
         if (nome == null || nome.trim().isEmpty()) {
-            throw new IllegalArgumentException("O campo nome é obrigatório.");
+            throw new IllegalArgumentException("O nome do produto é obrigatório.");
         }
-        if (preco < 0) {
-            throw new IllegalArgumentException("O campo preço não pode ser negativo.");
-        }
-        if (categoria == null || categoria.trim().isEmpty()) {
-            throw new IllegalArgumentException("O campo categoria é obrigatório.");
-        }
-        if (descricao == null || descricao.trim().isEmpty()) {
-            throw new IllegalArgumentException("O campo descrição é obrigatório.");
+        if (preco <= 0) {
+            throw new IllegalArgumentException("O preço deve ser maior que zero.");
         }
     }
 
-    // --- Salva ---
-    public void salvarProduto(String nome, double preco, String categoria, String descricao) {
-        validarCampos(nome, preco, categoria, descricao);
-        Produto produto = new Produto(nome, preco, categoria, descricao);
+    /**
+     * Cria e salva um novo produto no repositório.
+     */
+    public Produto salvarProduto(String nome, double preco, String categoria, String descricao) {
+        validarDados(nome, preco);
         
-        repository.save(produto);
-        System.out.println("Produto salvo: " + nome);
+        Produto produto = new Produto(nome, descricao, preco, categoria);
+        
+        return repository.save(produto);
     }
 
+    /**
+     * Busca um produto pelo seu identificador.
+     */
+    public Produto buscarPorId(Long idProduto) {
+        if (idProduto == null || idProduto <= 0) {
+            throw new IllegalArgumentException("ID do produto inválido.");
+        }
+        
+        Optional<Produto> produto = repository.findById(idProduto);
+        
+        return produto.orElseThrow(() -> new RuntimeException("Produto ID " + idProduto + " não encontrado."));
+    }
 
-    // --- Listar todos ---
+    /**
+     * Busca todos os produtos.
+     */
     public List<Produto> buscarTodos() {
         return repository.findAll();
     }
 
-
-    // --- Buscar por ID ---
-    public Produto buscarPorId(int idProduto) {
-        Produto produto = repository.findById(idProduto);
-        if (produto == null) {
-            throw new IllegalArgumentException("Produto não encontrado com ID: " + idProduto);
+    /**
+     * Atualiza os dados de um produto existente.
+     */
+    public Produto atualizarProduto(Long idProduto, String nome, double preco, String categoria, String descricao) {
+        if (idProduto == null || idProduto <= 0) {
+            throw new IllegalArgumentException("ID do produto inválido para atualização.");
         }
-        return produto;
-    }
-
-
-    // --- Atualizar ---
-    public void atualizarProduto(int idProduto, String nome,  double preco, String categoria, String descricao) {
-        Produto produtoExistente = repository.findById(idProduto);
-
-        if (produtoExistente == null) {
-            throw new IllegalArgumentException("Produto não encontrado para atualização. ID: " + idProduto);
-        }
-       
-
-        produtoExistente.setIdProduto(idProduto);
+        validarDados(nome, preco);
+        
+        // 1. Busca a entidade existente
+        Produto produtoExistente = buscarPorId(idProduto);
+        
+        // 2. Atualiza os campos
         produtoExistente.setNome(nome);
         produtoExistente.setPreco(preco);
         produtoExistente.setCategoria(categoria);
         produtoExistente.setDescricao(descricao);
-
-
-        repository.update(produtoExistente);
-        System.out.println("Produto atualizado: " + nome);
+        
+        // 3. Salva a entidade atualizada
+        return repository.save(produtoExistente);
     }
 
-
-    // --- Deletar ---
-    public void deletarProduto(int idProduto) {
-        Produto produto = repository.findById(idProduto);
-        if (produto == null) {
-            throw new IllegalArgumentException("Produto não encontrado para exclusão. ID: " + idProduto);
+    /**
+     * Deleta um produto pelo seu identificador.
+     */
+    public void deletarProduto(Long idProduto) {
+        if (idProduto == null || idProduto <= 0) {
+            throw new IllegalArgumentException("ID do produto inválido para exclusão.");
         }
+        
+        // Opcional: Verificar se o produto está em algum pedido antes de deletar
+        
+        // Deleta o produto
         repository.delete(idProduto);
-        System.out.println("Produto deletado: " + idProduto);
     }
 }
-
-

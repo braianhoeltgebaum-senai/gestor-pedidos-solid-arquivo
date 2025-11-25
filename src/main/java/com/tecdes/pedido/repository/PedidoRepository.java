@@ -1,14 +1,18 @@
 package com.tecdes.pedido.repository;
 
-import java.util.List;
-
 import com.tecdes.pedido.model.entity.Pedido;
+import com.tecdes.pedido.model.entity.Cliente;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 public interface PedidoRepository {
 
-    void save(Pedido pedido);
-    Pedido findById(int id);
+    Pedido save(Pedido pedido);
+    Optional<Pedido> findById(Long id);
     List<Pedido> findAll();
-    void update(Pedido pedido);
-    void delete(int id);
+    
+    // Métodos específicos de busca
+    List<Pedido> findByCliente(Cliente cliente);
+    List<Pedido> findByStatusAndDataHoraBetween(String status, LocalDateTime dataInicial, LocalDateTime dataFinal);
 }

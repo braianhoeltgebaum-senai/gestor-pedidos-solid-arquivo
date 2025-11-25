@@ -5,42 +5,56 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Pedido {
-    private int IdPedido;
+    
+    // Atributos ajustados
+    private Long idPedido; 
     private LocalDateTime dataHora;
     private String status;
-    private List<ItemPedido> produtos;
+    private List<ItemPedido> produtos; 
     private double valorTotal;
-    private String TipoPagamento;
-    @SuppressWarnings("rawtypes")
-    private ArrayList itens;
+    private String tipoPagamento;
+    private Cliente cliente; // <-- NOVO ATRIBUTO: Relacionamento com Cliente
 
-    
-    
-        public void pedido() {
-            this.dataHora = LocalDateTime.now();
-            this.status = "Recebido";
-            this.itens = new ArrayList<>();
-            this.valorTotal = 0.0;
-
+    // Construtor Padrão 
+    public Pedido() {
+        this.dataHora = LocalDateTime.now();
+        this.status = "Recebido";
+        this.produtos = new ArrayList<>(); 
+        this.valorTotal = 0.0;
     }
 
+    // Método de cálculo 
     public void calcularTotal () {
         double total = 0.0;
-        for (Object item : itens) {
-            if (item instanceof ItemPedido) {
-                total += ((ItemPedido) item).calcularTotal();
+        
+        if (this.produtos != null) {
+            for (ItemPedido item : this.produtos) {
+                // Assumindo que ItemPedido tem o método calcularTotal()
+                total += item.calcularTotal(); 
             }
         }
         
         this.valorTotal = total;
     }
 
-    public int getIdPedido() {
-        return IdPedido;
+    // -------------------------------------------------------------------
+    // Getters e Setters
+    // -------------------------------------------------------------------
+
+    public Long getId() { 
+        return idPedido;
+    }
+    
+    public Long getIdPedido() { 
+        return idPedido;
     }
 
-    public void setId(int IdPedido) {
-        this.IdPedido = IdPedido;
+    public void setId(Long idPedido) {
+        this.idPedido = idPedido;
+    }
+    
+    public void setIdPedido(Long idPedido) { 
+        this.idPedido = idPedido;
     }
 
     public LocalDateTime getDataHora() {
@@ -76,22 +90,19 @@ public class Pedido {
     }
 
     public String getTipoPagamento() {
-        return TipoPagamento;
+        return tipoPagamento;
     }
 
     public void setTipoPagamento(String tipoPagamento) {
-        TipoPagamento = tipoPagamento;
+        this.tipoPagamento = tipoPagamento;
+    }
+    
+    // NOVO: Getter e Setter para Cliente
+    public Cliente getCliente() {
+        return cliente;
     }
 
-    @SuppressWarnings("rawtypes")
-    public ArrayList getItens() {
-        return itens;
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
     }
-
-    public void setItens(@SuppressWarnings("rawtypes") ArrayList itens) {
-        this.itens = itens;
-    }
-
-
-
 }
