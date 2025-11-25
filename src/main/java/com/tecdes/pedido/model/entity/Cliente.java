@@ -2,7 +2,7 @@ package com.tecdes.pedido.model.entity;
 
 public class Cliente {
 
-    private int idCliente;
+    private Long idCliente; 
     private String nome;
     private String fone;
 
@@ -15,11 +15,13 @@ public class Cliente {
         setFone(fone);
     }
 
-    public int getIdCliente() {
+
+
+    public Long getIdCliente() {
         return idCliente;
     }
 
-    public void setIdCliente(int idCliente) {
+    public void setIdCliente(Long idCliente) {
         this.idCliente = idCliente;
     }
 
@@ -46,6 +48,8 @@ public class Cliente {
         }
     }
 
+    
+    
     @Override
     public String toString() {
         return nome + " (" + fone + ")";

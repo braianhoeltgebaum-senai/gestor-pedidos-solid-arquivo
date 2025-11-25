@@ -1,13 +1,13 @@
-package com.tecdes.pedido.repository.impl;
+package com.tecdes.pedido.repository; 
 
 import com.tecdes.pedido.model.entity.Cliente;
-import com.tecdes.pedido.repository.ClienteRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
+
 
 public class ClienteRepositoryImpl implements ClienteRepository {
 
@@ -16,10 +16,11 @@ public class ClienteRepositoryImpl implements ClienteRepository {
 
     @Override
     public Cliente save(Cliente cliente) {
-        if (cliente.getIdCliente() == 0) {
-            cliente.setIdCliente((int) idGenerator.incrementAndGet());
+        if (cliente.getIdCliente() == null || cliente.getIdCliente() == 0L) {
+            cliente.setIdCliente(idGenerator.incrementAndGet());
         }
-        database.put((long) cliente.getIdCliente(), cliente);
+        
+        database.put(cliente.getIdCliente(), cliente);
         System.out.println("[DB] Cliente salvo/atualizado: ID " + cliente.getIdCliente());
         return cliente;
     }

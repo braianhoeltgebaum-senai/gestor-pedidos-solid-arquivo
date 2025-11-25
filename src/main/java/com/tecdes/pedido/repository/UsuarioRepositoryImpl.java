@@ -1,7 +1,6 @@
-package com.tecdes.pedido.repository.impl;
+package com.tecdes.pedido.repository;
 
 import com.tecdes.pedido.model.entity.Usuario;
-import com.tecdes.pedido.repository.UsuarioRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

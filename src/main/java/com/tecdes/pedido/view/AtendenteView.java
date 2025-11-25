@@ -35,12 +35,12 @@ public class AtendenteView {
                     case 0: System.out.println("Saindo do Menu Atendente..."); break;
                     default: System.err.println("Opção inválida.");
                 }
-            } catch (java.util.InputMismatchException e) {
+            } catch (java.util.InputMismatchException e) { // Captura o erro específico de tipo
                 System.err.println("Entrada inválida. Digite um número.");
                 scanner.nextLine();
                 opcao = -1;
             } catch (Exception e) {
-                System.err.println("Erro: " + e.getMessage());
+                System.err.println("Erro inesperado: " + e.getMessage());
                 opcao = -1;
             }
         } while (opcao != 0);
@@ -52,9 +52,8 @@ public class AtendenteView {
         System.out.println("Simulando a finalização de um Pedido de teste.");
         
         try {
-            // OBS: Esta é uma SIMULAÇÃO simplificada. A lógica completa estaria no Controller/Service.
+            // AQUI SERIA A LÓGICA PARA CONSTRUIR O PEDIDO COM ITENS
             Pedido pedidoTeste = new Pedido(); 
-            // setCliente, setItens, etc., seriam feitos aqui com base na entrada do usuário
             
             Pedido pedidoFinalizado = controller.iniciarNovaVenda(pedidoTeste);
             System.out.println("Venda/Pedido finalizado com sucesso!");
@@ -80,11 +79,11 @@ public class AtendenteView {
             System.out.println("Preço: " + produto.getPreco());
             System.out.println("---------------------------");
             
-        } catch (RuntimeException e) {
-            System.err.println("ERRO: Produto não encontrado.");
-        } catch (java.util.InputMismatchException e) {
+        } catch (java.util.InputMismatchException e) { // Captura o erro específico de tipo
             System.err.println("ERRO: ID deve ser um número.");
             scanner.nextLine();
+        } catch (RuntimeException e) {
+            System.err.println("ERRO: " + e.getMessage());
         }
     }
     
@@ -104,9 +103,13 @@ public class AtendenteView {
                 System.out.print("Confirme seu ID para exclusão (NÃO FAÇA ISSO EM PRODUÇÃO!): ");
                 Long id = scanner.nextLong();
                 scanner.nextLine();
+                
                 controller.delete(id);
                 System.out.println("Conta ID " + id + " excluída. Você foi desconectado.");
             }
+        } catch (java.util.InputMismatchException e) { // Captura o erro específico de tipo
+            System.err.println("ERRO: Entrada inválida. Digite um número.");
+            scanner.nextLine();
         } catch (Exception e) {
             System.err.println("ERRO: " + e.getMessage());
         }

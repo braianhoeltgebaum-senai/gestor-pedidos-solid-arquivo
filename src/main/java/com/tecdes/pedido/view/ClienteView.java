@@ -1,113 +1,143 @@
 package com.tecdes.pedido.view;
 
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.util.List;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.DefaultTableModel;
 import com.tecdes.pedido.controller.ClienteController;
 import com.tecdes.pedido.model.entity.Cliente;
-//import com.tecdes.pedido.model.entity.ItemPedido;
 
+import java.util.List;
+import java.util.Scanner;
 
-public class ClienteView extends JFrame{
-    
+public class ClienteView {
+
     private final ClienteController controller = new ClienteController();
+    private final Scanner scanner = new Scanner(System.in);
 
-    private JTextField txtNome;
-    private JTextField txtFone;
-    private JButton btnSalvar;
+    public void menuPrincipal() {
+        int opcao;
+        do {
+            System.out.println("\n--- MENU CLIENTE ---");
+            System.out.println("1. Cadastrar Novo Cliente");
+            System.out.println("2. Buscar Cliente por ID");
+            System.out.println("3. Listar Todos os Clientes");
+            System.out.println("4. Atualizar Cliente");
+            System.out.println("5. Excluir Cliente");
+            System.out.println("0. Voltar ao Menu Principal");
+            System.out.print("Escolha uma opção: ");
 
-public ClienteView() {
-    super("Cadastro de Pedidos - Lanchonete App");
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    setLayout(new BorderLayout(10, 10));
-
-    setupCadastroPainel();
-
-    setupListagemPainel();
-
-    pack();
-    setLocationRelativeTo(null);
-  }
-
-  private void setupCadastroPainel() {
-    JPanel panel = new JPanel(new GridLayout(3, 2, 5, 5));
-
-    txtNome = new JTextField(20);
-    txtFone = new JTextField(13);
-    btnSalvar = new JButton("Salvar Pedido");
-
-    panel.add(new JLabel("Nome:"));
-    panel.add(txtNome);
-    panel.add(new JLabel("Telefone (13 dígitos):"));
-    panel.add(txtFone);
-    panel.add(new JLabel());
-    panel.add(btnSalvar);
-
-    add(panel, BorderLayout.NORTH);
-
-    btnSalvar.addActionListener(e -> salvarPedido());
-  }
-
-  private void setupListagemPainel() {
-    DefaultTableColumnModel tableModel = new DefaultTableColumnModel();
-    JTable tblClientes = new JTable((TableModel) tableModel);
-    JScrollPane scrollPane = new JScrollPane(tblClientes);
-
-    add(new JLabel("Pedidos Cadastrados: "), BorderLayout.CENTER);
-    add(scrollPane, BorderLayout.SOUTH);
-
-    carregarTabelaClientes();
-  }
-
-  private void salvarPedido(){
-    String nome = txtNome.getText();
-    String fone = txtFone.getText();
-
-    try {
-      controller.salvar(nome, fone);
-      JOptionPane.showMessageDialog(this, "Pedido salvo com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-
-      txtNome.getText();
-      txtFone.getText();
-
-      carregarTabelaClientes();
-
-    } catch (IllegalArgumentException ex) {
-      JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro de Validação", JOptionPane.WARNING_MESSAGE );
-    } catch (RuntimeException ex) {
-      JOptionPane.showMessageDialog(this, "Erro ao salvar: " + ex.getCause().getMessage(), "Erro de Persistência", JOptionPane.ERROR_MESSAGE);
-      ex.printStackTrace();
+            try {
+                opcao = scanner.nextInt();
+                scanner.nextLine(); 
+                
+                switch (opcao) {
+                    case 1: cadastrarCliente(); break;
+                    case 2: buscarClientePorId(); break;
+                    case 3: listarTodosClientes(); break;
+                    case 4: atualizarCliente(); break;
+                    case 5: excluirCliente(); break;
+                    case 0: System.out.println("Retornando..."); break;
+                    default: System.err.println("Opção inválida.");
+                }
+            } catch (java.util.InputMismatchException e) {
+                System.err.println("Entrada inválida. Digite um número.");
+                scanner.nextLine(); 
+                opcao = -1;
+            } catch (Exception e) {
+                System.err.println("Erro inesperado: " + e.getMessage());
+                opcao = -1;
+            }
+        } while (opcao != 0);
     }
-  }
 
-  private void carregarTabelaClientes() {
-    DefaultTableModel tableModel = (DefaultTableModel) ((JTable) ((JScrollPane) getContentPane().getComponent(2)).getViewport().getView()).getModel();
-         tableModel.setRowCount(0);
-
-    try {
-      List<Cliente> clientes = controller.listarTodos();
-      for (Cliente c: clientes) {
-        tableModel.addRow(new Object[]{
-          c.getIdCliente(),
-          c.getNome(),
-          c.getFone()
-        });
-      }
-    } catch (RuntimeException ex) {
-      JOptionPane.showMessageDialog(this, "Erro ao carregar lista: " + 
-      ex.getMessage(), "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
+    private void cadastrarCliente() {
+        System.out.println("\n--- CADASTRAR CLIENTE ---");
+        System.out.print("Nome: ");
+        String nome = scanner.nextLine();
+        System.out.print("Telefone: ");
+        String fone = scanner.nextLine();
+        
+        try {
+            controller.salvar(nome, fone);
+            System.out.println("Cliente cadastrado com sucesso!");
+        } catch (IllegalArgumentException e) {
+            System.err.println("ERRO: " + e.getMessage());
+        }
     }
-  }
+    
+    private void buscarClientePorId() {
+        System.out.println("\n--- BUSCAR CLIENTE ---");
+        System.out.print("ID do Cliente: ");
+        try {
+            Long id = scanner.nextLong();
+            scanner.nextLine();
+            
+            Cliente cliente = controller.findById(id);
+            System.out.println("\n--- DETALHES ---");
+            System.out.println("ID: " + cliente.getIdCliente());
+            System.out.println("Nome: " + cliente.getNome());
+            System.out.println("Fone: " + cliente.getFone());
+            System.out.println("----------------");
+            
+        } catch (java.util.InputMismatchException e) { // <-- CAPTURA PRIMEIRO
+            System.err.println("ERRO: ID deve ser um número.");
+            scanner.nextLine();
+        } catch (RuntimeException e) { 
+            System.err.println("ERRO: " + e.getMessage());
+        }
+    }
+    
+    private void listarTodosClientes() {
+        System.out.println("\n--- LISTA DE CLIENTES ---");
+        List<Cliente> clientes = controller.buscarTodos();
+        if (clientes.isEmpty()) {
+            System.out.println("Nenhum cliente cadastrado.");
+            return;
+        }
+        for (Cliente c : clientes) {
+            System.out.printf("ID: %d | Nome: %s | Fone: %s\n", 
+                                c.getIdCliente(), c.getNome(), c.getFone());
+        }
+        System.out.println("-------------------------");
+    }
+    
+    private void atualizarCliente() {
+        System.out.println("\n--- ATUALIZAR CLIENTE ---");
+        System.out.print("ID do Cliente para atualizar: ");
+        try {
+            Long id = scanner.nextLong();
+            scanner.nextLine();
+            
+            controller.findById(id); 
+            
+            System.out.print("Novo Nome: ");
+            String novoNome = scanner.nextLine();
+            System.out.print("Novo Telefone: ");
+            String novoFone = scanner.nextLine();
+            
+            controller.update(id, novoNome, novoFone);
+            System.out.println("Cliente atualizado com sucesso!");
+            
+        } catch (java.util.InputMismatchException e) { // <-- CAPTURA PRIMEIRO
+            System.err.println("ERRO: ID deve ser um número.");
+            scanner.nextLine();
+        } catch (RuntimeException e) {
+            System.err.println("ERRO: " + e.getMessage());
+        }
+    }
+    
+    private void excluirCliente() {
+        System.out.println("\n--- EXCLUIR CLIENTE ---");
+        System.out.print("ID do Cliente para excluir: ");
+        try {
+            Long id = scanner.nextLong();
+            scanner.nextLine();
+            
+            controller.delete(id);
+            System.out.println("Cliente excluído com sucesso!");
+            
+        } catch (java.util.InputMismatchException e) { // <-- CAPTURA PRIMEIRO
+            System.err.println("ERRO: ID deve ser um número.");
+            scanner.nextLine();
+        } catch (RuntimeException e) {
+            System.err.println("ERRO: " + e.getMessage());
+        }
+    }
 }

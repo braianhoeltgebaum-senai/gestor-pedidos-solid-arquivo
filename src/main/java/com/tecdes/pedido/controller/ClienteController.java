@@ -4,41 +4,39 @@ import java.util.List;
 
 import com.tecdes.pedido.model.entity.Cliente;
 import com.tecdes.pedido.service.ClienteService;
-
+import com.tecdes.pedido.repository.ClienteRepositoryImpl;
 
 public class ClienteController {
     
-    private final ClienteService service = new ClienteService();
+    private final ClienteService service;
 
-    // Salva
+    public ClienteController() {
+        this.service = new ClienteService(new ClienteRepositoryImpl()); 
+    }
+
     public void salvar(String nome, String fone) {
-        service.salvarCliente(nome, fone);
+        Cliente novoCliente = new Cliente(nome, fone);
+        service.cadastrarCliente(novoCliente);
     }
 
-    // Busca todos
     public List<Cliente> buscarTodos() {
-        return service.buscarTodos();
+        return service.buscarTodosClientes();
     }
 
-     // Busca por Id
-     public Cliente findById(int idCliente){
-        return service.buscarPorId(idCliente);
+    public Cliente findById(Long idCliente){
+        return service.buscarClientePorId(idCliente);
     }
 
-
-    // Atualiza
-    public void update(int idCliente, String nome, String fone){
-        service.atualizarCliente(idCliente, nome, fone);
+    public void update(Long idCliente, String nome, String fone){
+        Cliente dadosNovos = new Cliente(nome, fone);
+        service.atualizarCliente(idCliente, dadosNovos);
     }
 
-
-    // Deleta
-    public void delete(int idCliente){
-        service.deletarCliente(idCliente);
+    public void delete(Long idCliente){
+        service.excluirCliente(idCliente);
     }
 
     public List<Cliente> listarTodos() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'listarTodos'");
+        return service.buscarTodosClientes();
     }
 }

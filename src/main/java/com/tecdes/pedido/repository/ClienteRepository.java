@@ -1,14 +1,16 @@
 package com.tecdes.pedido.repository;
 
+import com.tecdes.pedido.model.entity.Cliente;
+import java.util.Optional;
 import java.util.List;
 
-import com.tecdes.pedido.model.entity.Cliente;
-
 public interface ClienteRepository {
-    void salvar(Cliente cliente);
-    List<Cliente> buscarTodos();
-    Cliente buscarPorId(int id);
-    void atualizar(Cliente cliente);
-    void deletar(int id);
-}
 
+    Optional<Cliente> findByNome(String nome);
+    
+    Cliente save(Cliente cliente);
+    Optional<Cliente> findById(Long id);
+    List<Cliente> findAll();
+    void deleteById(Long id);
+    boolean existsById(Long id);
+}
