@@ -1,69 +1,46 @@
 package com.tecdes.pedido.service;
 
-import java.util.List;
-
 import com.tecdes.pedido.model.entity.Cliente;
-import com.tecdes.pedido.repository.ClienteRepository;
-import com.tecdes.pedido.repository.ClienteRepositorylmpl;
-
+import com.tecdes.pedido.repository.ClienteRepository; 
+import java.util.List;
 
 public class ClienteService {
 
-    private final ClienteRepository repository = new ClienteRepositorylmpl();
+    private final ClienteRepository clienteRepository; 
 
-    // --- Criar ---
-    public void salvarCliente(String nome, String fone) {
-        if (nome == null || nome.trim().isEmpty()) {
-            throw new IllegalArgumentException("O campo nome é obrigatório.");
-        }
-        if (fone == null) {
-            throw new IllegalArgumentException("O campo telefone é obrigatório.");
-        }
-
-        Cliente cliente = new Cliente(nome, fone);
-        repository.salvar(cliente);
+    public ClienteService(ClienteRepository clienteRepository) {
+        this.clienteRepository = clienteRepository;
     }
 
-    // --- Listar todos ---
-    public List<Cliente> buscarTodos() {
-        return repository.buscarTodos();
+    public Cliente cadastrarCliente(Cliente cliente) {
+        if (cliente.getNome() == null || cliente.getNome().trim().isEmpty()) {
+            throw new IllegalArgumentException("O nome do cliente é obrigatório.");
+        }
+        return clienteRepository.save(cliente);
     }
 
-    // --- Buscar por ID ---
-    public Cliente buscarPorId(int id) {
-        Cliente cliente = repository.buscarPorId(id);
-        if (cliente == null) {
-            throw new IllegalArgumentException("Cliente não encontrado com ID: " + id);
-        }
-        return cliente;
+    public Cliente buscarClientePorId(Long id) {
+        return clienteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente ID " + id + " não encontrado."));
     }
 
-    // --- Atualizar ---
-    public void atualizarCliente(int id, String nome, String fone) {
-        Cliente clienteExistente = repository.buscarPorId(id);
-        if (clienteExistente == null) {
-            throw new IllegalArgumentException("Cliente não encontrado para atualização. ID: " + id);
-        }
-
-        if (nome == null || nome.trim().isEmpty()) {
-            throw new IllegalArgumentException("O campo nome é obrigatório.");
-        }
-        if (fone == null) {
-            throw new IllegalArgumentException("O campo telefone é obrigatório.");
-        }
-
-        clienteExistente.setNome(nome);
-        clienteExistente.setFone(fone);
-
-        repository.atualizar(clienteExistente);
+    public List<Cliente> buscarTodosClientes() {
+        return clienteRepository.findAll();
+    }
+    
+    public Cliente atualizarCliente(Long id, Cliente dadosNovos) {
+        Cliente clienteExistente = buscarClientePorId(id); 
+        
+        clienteExistente.setNome(dadosNovos.getNome());
+        clienteExistente.setFone(dadosNovos.getFone());
+        
+        return clienteRepository.save(clienteExistente);
     }
 
-    // --- Deletar ---
-    public void deletarCliente(int id) {
-        Cliente cliente = repository.buscarPorId(id);
-        if (cliente == null) {
-            throw new IllegalArgumentException("Cliente não encontrado para exclusão. ID: " + id);
+    public void excluirCliente(Long id) {
+        if (!clienteRepository.existsById(id)) {
+            throw new RuntimeException("Cliente ID " + id + " não pode ser excluído, pois não existe.");
         }
-        repository.deletar(id);
+        clienteRepository.deleteById(id);
     }
 }
