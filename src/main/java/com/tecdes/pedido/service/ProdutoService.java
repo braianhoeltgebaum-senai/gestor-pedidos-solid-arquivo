@@ -30,7 +30,7 @@ public class ProdutoService {
     public Produto salvarProduto(String nome, double preco, String categoria, String descricao) {
         validarDados(nome, preco);
         
-        Produto produto = new Produto(nome, descricao, preco, categoria);
+        Produto produto = new Produto(nome, preco, categoria, descricao);
         
         return repository.save(produto);
     }
@@ -38,7 +38,7 @@ public class ProdutoService {
     /**
      * Busca um produto pelo seu identificador.
      */
-    public Produto buscarPorId(Long idProduto) {
+    public Produto buscarProdutoPorId(Long idProduto) {
         if (idProduto == null || idProduto <= 0) {
             throw new IllegalArgumentException("ID do produto inválido.");
         }
@@ -65,7 +65,7 @@ public class ProdutoService {
         validarDados(nome, preco);
         
         // 1. Busca a entidade existente
-        Produto produtoExistente = buscarPorId(idProduto);
+        Produto produtoExistente = buscarProdutoPorId(idProduto);
         
         // 2. Atualiza os campos
         produtoExistente.setNome(nome);
