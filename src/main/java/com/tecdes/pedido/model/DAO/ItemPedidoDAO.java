@@ -19,7 +19,7 @@ public class ItemPedidoDAO {
         String sql = "INSERT INTO item_pedido (id_produto, quantidade, preco_unitario, observacoes) VALUES (?, ?, ?, ?)";
 
         PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setInt(1, item.getProduto().getIdProduto());
+        ps.setLong(1, item.getProduto().getIdProduto());
         ps.setInt(2, item.getQuantidade());
         ps.setDouble(3, item.getPrecoUnitario());
         ps.setString(4, item.getObservacoes());
@@ -39,7 +39,7 @@ public class ItemPedidoDAO {
             Produto p = new Produto();
 
             item.setIdItem(rs.getInt("id"));
-            p.setIdProduto(rs.getInt("id_produto"));
+            p.setIdProduto(rs.getLong("id_produto"));
             item.setProduto(p);
 
             item.setQuantidade(rs.getInt("quantidade"));
@@ -64,7 +64,7 @@ public class ItemPedidoDAO {
             Produto p = new Produto();
 
             item.setIdItem(rs.getInt("id"));
-            p.setIdProduto(rs.getInt("id_produto"));
+            p.setIdProduto(rs.getLong("id_produto"));
             item.setProduto(p);
 
             item.setQuantidade(rs.getInt("quantidade"));
@@ -81,11 +81,11 @@ public class ItemPedidoDAO {
 
         PreparedStatement ps = conn.prepareStatement(sql);
 
-        ps.setInt(1, item.getProduto().getIdProduto());
+        ps.setLong(1, item.getProduto().getIdProduto());
         ps.setInt(2, item.getQuantidade());
         ps.setDouble(3, item.getPrecoUnitario());
         ps.setString(4, item.getObservacoes());
-        ps.setInt(5, item.getIdItem());
+        ps.setLong(5, item.getIdItem());
 
         ps.executeUpdate();
     }
