@@ -38,7 +38,7 @@ public class ClienteDAO {
 
             while (rs.next()) {
                 Cliente c = new Cliente();
-                c.setIdCliente(rs.getInt("id_cliente"));
+                c.setIdCliente(rs.getLong("id_cliente"));
                 c.setNome(rs.getString("nome"));
                 c.setFone(rs.getString("fone"));
                 clientes.add(c);
@@ -52,18 +52,18 @@ public class ClienteDAO {
     }
 
     // BUSCAR POR ID
-    public Cliente buscarPorId(int id) {
+    public Cliente buscarPorId(Long id) {
         String sql = "SELECT id_cliente, nome, fone FROM cliente WHERE id_cliente = ?";
         Cliente cliente = null;
 
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setInt(1, id);
+            stmt.setLong(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     cliente = new Cliente();
-                    cliente.setIdCliente(rs.getInt("id_cliente"));
+                    cliente.setIdCliente(rs.getLong("id_cliente"));
                     cliente.setNome(rs.getString("nome"));
                     cliente.setFone(rs.getString("fone"));
                 }
@@ -85,7 +85,7 @@ public class ClienteDAO {
 
             stmt.setString(1, cliente.getNome());
             stmt.setString(2, cliente.getFone());
-            stmt.setInt(3, cliente.getIdCliente());
+            stmt.setLong(3, cliente.getIdCliente());
             stmt.executeUpdate();
 
             System.out.println("Cliente atualizado com sucesso!");
