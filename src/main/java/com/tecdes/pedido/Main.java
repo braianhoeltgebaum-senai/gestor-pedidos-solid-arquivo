@@ -236,7 +236,7 @@ public class Main {
     }
 }
     
-    // Método para fechar recursos
+    // Método para fechar recursos2
     public static void fecharRecursos() {
         if (scanner != null) {
             scanner.close();
