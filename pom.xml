@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<!-- <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -9,8 +9,306 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
     </properties>
 
+    <dependencies>
+  <dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.33</version>
+  </dependency>
+  <dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>5.9.2</version>
+    <scope>test</scope>
+  </dependency>
+</dependencies>
+
+    <build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.0.0</version>
+        </plugin>
+    </plugins>
+</build>
+
+</project> -->
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.tecdes.pedido</groupId>
+    <artifactId>gestor-pedidos-solid-arquivo</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>Gestor de Pedidos SOLID</name>
+    <description>Sistema de gestão de pedidos com arquitetura SOLID</description>
+
+    <properties>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        
+        <!-- Versões das dependências -->
+        <mysql.version>8.0.33</mysql.version>
+        <junit.version>5.9.2</junit.version>
+        <slf4j.version>2.0.7</slf4j.version>
+        <logback.version>1.4.7</logback.version>
+        <maven.surefire.version>3.0.0</maven.surefire.version>
+        <maven.compiler.version>3.11.0</maven.compiler.version>
+        <maven.jar.version>3.3.0</maven.jar.version>
+    </properties>
+
+    <dependencies>
+        <!-- MySQL Connector -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.version}</version>
+        </dependency>
+        
+        <!-- JUnit 5 para testes -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- Logging - SLF4J com Logback -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+        
+        <!-- Dependências opcionais úteis -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.28</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        
+        <!-- Apache Commons para utilitários -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        
+        <!-- Jackson para JSON (se precisar) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.15.2</version>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Compilador Java -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.28</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            
+            <!-- Plugin para executar testes -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.version}</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                    </includes>
+                    <systemPropertyVariables>
+                        <java.util.logging.config.file>
+                            src/test/resources/logging-test.properties
+                        </java.util.logging.config.file>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            
+            <!-- Plugin para criar JAR executável -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven.jar.version}</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.tecdes.pedido.Main</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            
+            <!-- Plugin para copiar dependências -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <!-- Plugin para limpar projeto -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.3.2</version>
+            </plugin>
+            
+            <!-- Plugin para gerar javadoc -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <show>private</show>
+                    <nohelp>true</nohelp>
+                </configuration>
+            </plugin>
+        </plugins>
+        
+        <!-- Configuração de recursos -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                    <include>**/*.txt</include>
+                </includes>
+            </resource>
+        </resources>
+        
+        <!-- Configuração de testes -->
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                    <include>**/*.txt</include>
+                </includes>
+            </testResource>
+        </testResources>
+    </build>
+
+    <!-- Perfis de build -->
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <build.profile.id>dev</build.profile.id>
+                <log.level>DEBUG</log.level>
+            </properties>
+        </profile>
+        
+        <profile>
+            <id>prod</id>
+            <properties>
+                <build.profile.id>prod</build.profile.id>
+                <log.level>WARN</log.level>
+            </properties>
+        </profile>
+        
+        <profile>
+            <id>test</id>
+            <properties>
+                <build.profile.id>test</build.profile.id>
+                <log.level>INFO</log.level>
+            </properties>
+        </profile>
+    </profiles>
+
+    <!-- Repositórios -->
+    <repositories>
+        <repository>
+            <id>maven-central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+    </repositories>
+    
+    <!-- Plugin Repositórios -->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>maven-central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </pluginRepository>
+    </pluginRepositories>
 </project>
