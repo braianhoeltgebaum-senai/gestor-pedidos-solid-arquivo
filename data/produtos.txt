@@ -1,0 +1,9 @@
+1;Coca-Cola 2L PROMOÇÃO;8.9;Bebidas;Refrigerante de cola - PROMOÇÃO ESPECIAL
+2;Pepsi 2L;8.9;Bebidas;Refrigerante de cola
+3;Guaraná Antarctica;7.9;Bebidas;Refrigerante de guaraná
+1;Coca-Cola;6.9;Bebida;Refrigerante
+1;Coca-Cola;6.9;Bebida;Refrigerante
+1;Coca-Cola;6.9;Bebida;Refrigerante
+1;Coca-Cola;6.9;Bebida;Refrigerante
+1;Coca-Cola;6.9;Bebida;Refrigerante
+1;Coca-Cola;6.9;Bebida;Refrigerante
