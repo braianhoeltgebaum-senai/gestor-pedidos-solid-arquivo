@@ -1,60 +1,61 @@
 package com.tecdes.pedido.service;
 
 import com.tecdes.pedido.model.entity.Pedido;
-import com.tecdes.pedido.model.entity.ItemPedido;
 import com.tecdes.pedido.repository.PedidoRepository;
-import java.time.LocalDateTime;
+//import java.time.LocalDateTime;
 import java.util.List;
 
 public class PedidoService {
 
     private final PedidoRepository pedidoRepository;
     private final ProdutoService produtoService;
+    private final ItemPedidoService itemPedidoService;
 
-    public PedidoService(PedidoRepository pedidoRepository, ProdutoService produtoService) {
+    public PedidoService(PedidoRepository pedidoRepository, ProdutoService produtoService, ItemPedidoService itemPedidoService) {
         this.pedidoRepository = pedidoRepository;
         this.produtoService = produtoService;
+        this.itemPedidoService = itemPedidoService;
     }
 
-    // NOVO: Criar pedido (método mais adequado para seu banco)
+    // Criar novo pedido
+    public Pedido criarPedido(int idCliente, int idEndereco) {
+        int numeroPedido = pedidoRepository.proximoNumeroPedido();
+        Pedido pedido = new Pedido('A', numeroPedido, idCliente, idEndereco);
+        return pedidoRepository.save(pedido);
+    }
+    
+    // Criar pedido com número específico
     public Pedido criarPedido(int idCliente, int idEndereco, int numeroPedido) {
-        Pedido pedido = new Pedido();
-        pedido.setIdCliente(idCliente);
-        pedido.setIdEndereco(idEndereco);
-        pedido.setNrPedido(numeroPedido);
-        pedido.setStPedido('A'); // 'A' = Aberto
-        pedido.setDtPedido(LocalDateTime.now());
-        
+        Pedido pedido = new Pedido('A', numeroPedido, idCliente, idEndereco);
         return pedidoRepository.save(pedido);
     }
 
-    // CORRIGIDO: Mudou de Long para int
+    // Buscar pedido por ID
     public Pedido buscarPedidoPorId(int id) {
         return pedidoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido ID " + id + " não encontrado."));
     }
 
+    // Listar todos os pedidos
     public List<Pedido> buscarTodosPedidos() {
         return pedidoRepository.findAll();
     }
     
-    public List<Pedido> buscarTodos() {
-        return buscarTodosPedidos();
-    }
-    
-    // NOVO: Buscar por cliente
+    // Listar pedidos por cliente
     public List<Pedido> buscarPedidosPorCliente(int idCliente) {
         return pedidoRepository.findByCliente(idCliente);
     }
     
-    // NOVO: Buscar por status
+    // Listar pedidos por status
     public List<Pedido> buscarPedidosPorStatus(char status) {
+        if (status != 'A' && status != 'E' && status != 'P' && status != 'C') {
+            throw new IllegalArgumentException("Status inválido. Use: A (Aberto), E (Em preparo), P (Pronto), C (Concluído)");
+        }
         return pedidoRepository.findByStatus(status);
     }
 
-    // CORRIGIDO: Mudou de Long para int e char para status
+    // Atualizar status do pedido
     public Pedido atualizarStatus(int id, char novoStatus) {
-        // Valida status
         if (novoStatus != 'A' && novoStatus != 'E' && novoStatus != 'P' && novoStatus != 'C') {
             throw new IllegalArgumentException("Status inválido. Use: A, E, P, C");
         }
@@ -62,67 +63,80 @@ public class PedidoService {
         Pedido pedidoExistente = buscarPedidoPorId(id);
         pedidoExistente.setStPedido(novoStatus);
         
-        // Se mudar para concluído, atualiza data de conclusão
-        if (novoStatus == 'C') {
-            pedidoExistente.setDtConclusao(LocalDateTime.now());
-        }
-        
         return pedidoRepository.save(pedidoExistente);
     }
 
-    // CORRIGIDO: Mudou de Long para int
-    public Pedido cancelarPedido(int id) {
+    // Cancelar pedido
+    public void cancelarPedido(int id) {
         Pedido pedidoExistente = buscarPedidoPorId(id);
 
-        // Não pode cancelar se já estiver concluído
         if (pedidoExistente.getStPedido() == 'C') {
             throw new RuntimeException("Não é possível cancelar um pedido já concluído.");
         }
 
-        pedidoExistente.setStPedido('X'); // 'X' = Cancelado (você pode definir outro)
+        pedidoExistente.setStPedido('C');
+        pedidoRepository.save(pedidoExistente);
+    }
+    
+    // Adicionar item ao pedido
+    public void adicionarItemPedido(int idPedido, int idProduto, int quantidade) {
+        buscarPedidoPorId(idPedido); // Valida se pedido existe
+        produtoService.buscarPorId(idProduto); // Valida se produto existe
+        itemPedidoService.adicionarItem(idPedido, idProduto, quantidade);
+    }
+    
+    // Calcular total do pedido - CORRIGIDO (usa a variável)
+    public double calcularTotalPedido(int idPedido) {
+        Pedido pedido = buscarPedidoPorId(idPedido);
+        
+        List<com.tecdes.pedido.model.entity.ItemPedido> itens = 
+            itemPedidoService.listarPorPedido(idPedido);
+        
+        double total = 0.0;
+        
+        for (com.tecdes.pedido.model.entity.ItemPedido item : itens) {
+            com.tecdes.pedido.model.entity.Produto produto = 
+                produtoService.buscarPorId(item.getIdProduto());
+            
+            total += produto.getVlProduto().doubleValue() * item.getQtProduto();
+        }
+        
+        // Opcional: Log para debug
+        System.out.println("Total do pedido #" + pedido.getNrPedido() + ": R$ " + total);
+        
+        return total;
+    }
+    
+    // Atualizar pedido completo
+    public Pedido atualizarPedido(int id, Pedido dadosAtualizados) {
+        Pedido pedidoExistente = buscarPedidoPorId(id);
+        
+        pedidoExistente.setStPedido(dadosAtualizados.getStPedido());
+        pedidoExistente.setNrPedido(dadosAtualizados.getNrPedido());
+        pedidoExistente.setIdCliente(dadosAtualizados.getIdCliente());
+        pedidoExistente.setIdEndereco(dadosAtualizados.getIdEndereco());
+        
         return pedidoRepository.save(pedidoExistente);
     }
     
-    // NOVO: Adicionar item ao pedido
-    public void adicionarItemPedido(int idPedido, int idProduto, int quantidade) {
-        // Verifica se pedido existe
-        Pedido pedido = buscarPedidoPorId(idPedido);
-        
-        // Verifica se produto existe
-        produtoService.buscarPorId(idProduto);
-        
-        // Cria item de pedido
-        ItemPedido item = new ItemPedido();
-        item.setIdPedido(idPedido);
-        item.setIdProduto(idProduto);
-        item.setQuantidade(quantidade);
-        
-        // Aqui você precisaria de um ItemPedidoRepository para salvar
-        // itemPedidoRepository.save(item);
+    // Deletar pedido
+    public void deletarPedido(int id) {
+        itemPedidoService.limparItensPedido(id);
+        pedidoRepository.delete(id);
     }
     
-    // NOVO: Calcular total do pedido
-    public double calcularTotalPedido(int idPedido) {
-        // Busca o pedido
-        Pedido pedido = buscarPedidoPorId(idPedido);
-        
-        // Aqui você precisaria buscar os itens do pedido e calcular
-        // List<ItemPedido> itens = itemPedidoRepository.findByPedido(idPedido);
-        // double total = 0;
-        // for (ItemPedido item : itens) {
-        //     Produto produto = produtoService.buscarPorId(item.getIdProduto());
-        //     total += produto.getVlProduto() * item.getQuantidade();
-        // }
-        // return total;
-        
-        return 0.0; // Temporário - implemente conforme sua lógica
+    // Verificar se pedido existe
+    public boolean pedidoExiste(int id) {
+        return pedidoRepository.existsById(id);
     }
     
-    // NOVO: Método antigo mantido para compatibilidade (se necessário)
-    public Pedido finalizarPedido(Pedido novoPedido) {
-        // Implementação antiga - ajuste conforme necessário
-        novoPedido.setStPedido('C'); // Concluído
-        novoPedido.setDtConclusao(LocalDateTime.now());
-        return pedidoRepository.save(novoPedido);
+    // Contar total de pedidos
+    public int contarTotalPedidos() {
+        return pedidoRepository.count();
+    }
+    
+    // Buscar próximo número de pedido
+    public int proximoNumeroPedido() {
+        return pedidoRepository.proximoNumeroPedido();
     }
 }

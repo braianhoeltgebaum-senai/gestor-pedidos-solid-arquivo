@@ -1,83 +1,68 @@
 package com.tecdes.pedido.repository;
 
 import com.tecdes.pedido.model.entity.Pedido;
-import com.tecdes.pedido.model.entity.Cliente;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
+import com.tecdes.pedido.model.DAO.PedidoDAO;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 public class PedidoRepositoryImpl implements PedidoRepository {
     
-    private final Map<Long, Pedido> database = new HashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(0);
+    private final PedidoDAO pedidoDAO;
+    
+    public PedidoRepositoryImpl() {
+        this.pedidoDAO = new PedidoDAO();
+    }
 
     @Override
     public Pedido save(Pedido pedido) {
-        if (pedido.getId() == null || pedido.getId() == 0L) {
-            pedido.setId(idGenerator.incrementAndGet());
+        if (pedido.getIdPedido() == 0) {
+            // É um novo pedido (inserir)
+            pedidoDAO.inserir(pedido);
+        } else {
+            // É uma atualização
+            pedidoDAO.atualizar(pedido);
         }
-        database.put(pedido.getId(), pedido);
-        System.out.println("[REPO] Pedido salvo em memória: ID " + pedido.getId());
         return pedido;
     }
 
     @Override
-    public Optional<Pedido> findById(Long id) {
-        return Optional.ofNullable(database.get(id));
+    public Optional<Pedido> findById(int id) {
+        Pedido pedido = pedidoDAO.buscarPorId(id);
+        return Optional.ofNullable(pedido);
     }
 
     @Override
     public List<Pedido> findAll() {
-        return new ArrayList<>(database.values());
+        return pedidoDAO.buscarTodos();
     }
 
     @Override
-    public List<Pedido> findByCliente(Cliente cliente) {
-        if (cliente == null) return new ArrayList<>();
-       
-        return database.values().stream()
-                .filter(p -> p.getCliente() != null && 
-                           p.getCliente().getIdCliente() == cliente.getIdCliente())  // CORRIGIDO: usa == para int
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<Pedido> findByStatusAndDataHoraBetween(String status, 
-            LocalDateTime dataInicial, LocalDateTime dataFinal) {
-        return database.values().stream()
-                .filter(p -> p.getStatus().equalsIgnoreCase(status))
-                .filter(p -> p.getDataHora() != null &&
-                           !p.getDataHora().isBefore(dataInicial) &&
-                           !p.getDataHora().isAfter(dataFinal))
-                .collect(Collectors.toList());
-    }
-    
-    // Métodos adicionais úteis
-    @Override
-    public List<Pedido> findByStatus(String status) {
-        return database.values().stream()
-                .filter(p -> p.getStatus().equalsIgnoreCase(status))
-                .collect(Collectors.toList());
+    public void delete(int id) {
+        pedidoDAO.deletar(id);
     }
     
     @Override
-    public long count() {
-        return database.size();
+    public boolean existsById(int id) {
+        return pedidoDAO.buscarPorId(id) != null;
     }
     
     @Override
-    public void deleteById(Long id) {
-        database.remove(id);
-        System.out.println("[REPO] Pedido deletado da memória: ID " + id);
+    public List<Pedido> findByCliente(int idCliente) {
+        return pedidoDAO.buscarPorCliente(idCliente);
     }
     
     @Override
-    public boolean existsById(Long id) {
-        return database.containsKey(id);
+    public List<Pedido> findByStatus(char status) {
+        return pedidoDAO.buscarPorStatus(status);
+    }
+    
+    @Override
+    public int count() {
+        return pedidoDAO.contarTotal();
+    }
+    
+    @Override
+    public int proximoNumeroPedido() {
+        return pedidoDAO.proximoNumeroPedido();
     }
 }

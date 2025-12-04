@@ -13,7 +13,7 @@ public class Pedido {
     public Pedido() {}
 
     public Pedido(char stPedido, int nrPedido, int idCliente, int idEndereco) {
-        this.stPedido = stPedido;
+        setStPedido(stPedido);
         this.nrPedido = nrPedido;
         this.idCliente = idCliente;
         this.idEndereco = idEndereco;
@@ -35,7 +35,7 @@ public class Pedido {
     public void setStPedido(char stPedido) {
         char status = Character.toUpperCase(stPedido);
         if (status != 'A' && status != 'E' && status != 'P' && status != 'C') {
-            throw new IllegalArgumentException("Status inválido. Use: A (Aberto), E (Entregue), P (Pendente), C (Cancelado)");
+            throw new IllegalArgumentException("Status inválido. Use: A (Aberto), E (Em preparo), P (Pronto), C (Concluído)");
         }
         this.stPedido = status;
     }
@@ -72,14 +72,23 @@ public class Pedido {
         this.dtPedido = dtPedido;
     }
 
+    // Métodos úteis
     public String getStatusDescricao() {
         return switch(stPedido) {
             case 'A' -> "Aberto";
-            case 'E' -> "Entregue";
-            case 'P' -> "Pendente";
-            case 'C' -> "Cancelado";
+            case 'E' -> "Em preparo";
+            case 'P' -> "Pronto";
+            case 'C' -> "Concluído";
             default -> "Desconhecido";
         };
+    }
+
+    public boolean estaAberto() {
+        return stPedido == 'A' || stPedido == 'E' || stPedido == 'P';
+    }
+
+    public boolean estaConcluido() {
+        return stPedido == 'C';
     }
 
     @Override
