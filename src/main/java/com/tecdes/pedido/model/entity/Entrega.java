@@ -1,117 +1,130 @@
 package com.tecdes.pedido.model.entity;
 
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 public class Entrega {
+    private int idEntrega;              // id_entrega INT
+    private int idFuncionario;          // id_funcionario INT (FK)
+    private int idPedido;               // id_pedido INT (FK)
+    private LocalDateTime dtEntregaPrev; // dt_entrega_prev DATETIME
+    private LocalDateTime dtEntregaReal; // dt_entrega_real DATETIME (pode ser null)
+    private String stEntrega;           // st_entrega VARCHAR(9) - 'Saiu', 'Entregue'
+    private String obEntrega;           // ob_entrega VARCHAR(255) (pode ser null)
 
 
-   
-    private Long idEntrega;
-    private String enderecoEntrega;
-    private String status;
-    private LocalDate dataPrevista;
-    private LocalDate dataEntrega;
-   
-
-
-   
-    private Pedido pedido;
-
-
-   
     public Entrega() {
-        this.status = "Preparando";
-       
+        this.dtEntregaPrev = LocalDateTime.now().plusDays(2); // Entrega prevista em 2 dias
     }
-   
-   
-    public Entrega(String enderecoEntrega, LocalDate dataPrevista, Pedido pedido) {
+
+
+    public Entrega(int idFuncionario, int idPedido, String stEntrega) {
         this();
-        setEnderecoEntrega(enderecoEntrega);
-        setDataPrevista(dataPrevista);
-        setPedido(pedido);
+        this.idFuncionario = idFuncionario;
+        this.idPedido = idPedido;
+        this.stEntrega = stEntrega;
     }
 
 
-   
-   
-    /**
-     * Atualiza o status da entrega.
-     * @param novoStatus O novo status da entrega.
-     */
-    public void atualizarStatus(String novoStatus) {
-        this.status = novoStatus;
-       
-       
-        if ("Entregue".equalsIgnoreCase(novoStatus)) {
-            this.dataEntrega = LocalDate.now();
-        }
-        System.out.println("Entrega " + idEntrega + " - Novo Status: " + novoStatus);
-       
-    }
-
-
- 
-
-
-    public Long getIdEntrega() {
+    // Getters e Setters
+    public int getIdEntrega() {
         return idEntrega;
     }
 
 
-    public void setIdEntrega(Long idEntrega) {
+    public void setIdEntrega(int idEntrega) {
         this.idEntrega = idEntrega;
     }
 
 
-    public String getEnderecoEntrega() {
-        return enderecoEntrega;
+    public int getIdFuncionario() {
+        return idFuncionario;
     }
 
 
-    public void setEnderecoEntrega(String enderecoEntrega) {
-        this.enderecoEntrega = enderecoEntrega;
+    public void setIdFuncionario(int idFuncionario) {
+        this.idFuncionario = idFuncionario;
     }
 
 
-    public String getStatus() {
-        return status;
+    public int getIdPedido() {
+        return idPedido;
     }
 
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setIdPedido(int idPedido) {
+        this.idPedido = idPedido;
     }
 
 
-    public LocalDate getDataPrevista() {
-        return dataPrevista;
+    public LocalDateTime getDtEntregaPrev() {
+        return dtEntregaPrev;
     }
 
 
-    public void setDataPrevista(LocalDate dataPrevista) {
-        this.dataPrevista = dataPrevista;
+    public void setDtEntregaPrev(LocalDateTime dtEntregaPrev) {
+        if (dtEntregaPrev == null) {
+            throw new IllegalArgumentException("Data prevista é obrigatória");
+        }
+        this.dtEntregaPrev = dtEntregaPrev;
     }
 
 
-    public LocalDate getDataEntrega() {
-        return dataEntrega;
+    public LocalDateTime getDtEntregaReal() {
+        return dtEntregaReal;
     }
 
 
-    public void setDataEntrega(LocalDate dataEntrega) {
-        this.dataEntrega = dataEntrega;
+    public void setDtEntregaReal(LocalDateTime dtEntregaReal) {
+        this.dtEntregaReal = dtEntregaReal;
     }
 
 
-    public Pedido getPedido() {
-        return pedido;
+    public String getStEntrega() {
+        return stEntrega;
     }
 
 
-    public void setPedido(Pedido pedido) {
-        this.pedido = pedido;
+    public void setStEntrega(String stEntrega) {
+        if (stEntrega == null || (!stEntrega.equals("Saiu") && !stEntrega.equals("Entregue"))) {
+            throw new IllegalArgumentException("Status inválido. Use: 'Saiu' ou 'Entregue'");
+        }
+        this.stEntrega = stEntrega;
+       
+        // Se status for "Entregue", registra data real
+        if (stEntrega.equals("Entregue") && dtEntregaReal == null) {
+            this.dtEntregaReal = LocalDateTime.now();
+        }
+    }
+
+
+    public String getObEntrega() {
+        return obEntrega;
+    }
+
+
+    public void setObEntrega(String obEntrega) {
+        if (obEntrega != null && obEntrega.length() > 255) {  // CORRIGIDO AQUI
+            throw new IllegalArgumentException("Observação muito longa (máx 255 caracteres)");
+        }
+        this.obEntrega = obEntrega;
+    }
+
+
+    public boolean isEntregue() {
+        return "Entregue".equals(stEntrega);
+    }
+
+
+    public boolean isAtrasada() {
+        return !isEntregue() && LocalDateTime.now().isAfter(dtEntregaPrev);
+    }
+
+
+    @Override
+    public String toString() {
+        String status = isEntregue() ? "✅ Entregue" : (isAtrasada() ? "⚠️ Atrasada" : "⏳ Em andamento");
+        return "Entrega #" + idEntrega + " - Pedido: " + idPedido + " - " + status;
     }
 }
