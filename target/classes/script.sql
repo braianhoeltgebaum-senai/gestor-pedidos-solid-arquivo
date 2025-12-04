@@ -4,16 +4,15 @@ CREATE DATABASE DB_SA_2;
 USE DB_SA_2;
 
 CREATE TABLE T_SGP_CLIENTE(
-    id_cliente      INT             NOT NULL,
+    id_cliente      INT             NOT NULL AUTO_INCREMENT,
     nm_cliente      VARCHAR(60)     NOT NULL,
     nr_cadastro     CHAR(3)         NOT NULL,
     ds_email        CHAR(150)       NOT NULL,
-    nr_telefone     CHAR(15)        NOT NULL
+    nr_telefone     CHAR(15)        NOT NULL,
+    PRIMARY KEY (id_cliente)  
 );
 
 ALTER TABLE T_SGP_CLIENTE
-    ADD CONSTRAINT PK_CLIENTE
-    PRIMARY KEY(id_cliente),
     ADD CONSTRAINT UN_CLIENTE_CADASTRO 
     UNIQUE (nr_cadastro),
     ADD CONSTRAINT UN_CLIENTE_TELEFONE
@@ -22,7 +21,7 @@ ALTER TABLE T_SGP_CLIENTE
     CHECK (ds_email LIKE '%@%.%');
 
 CREATE TABLE T_SGP_ENDERECO(
-    id_endereco     INT             NOT NULL,
+    id_endereco     INT             NOT NULL AUTO_INCREMENT PRIMARY KEY,  -- PRIMARY KEY ADICIONADO AQUI
     sg_estado       CHAR(2)         NOT NULL,
     nm_cidade       VARCHAR(80)     NOT NULL,
     nm_bairro       VARCHAR(80)     NOT NULL,
@@ -35,8 +34,6 @@ CREATE TABLE T_SGP_ENDERECO(
 );
 
 ALTER TABLE T_SGP_ENDERECO
-    ADD CONSTRAINT PK_ENDERECO
-    PRIMARY KEY(id_endereco),
     ADD CONSTRAINT FK_ENDERECO_CLIENTE 
     FOREIGN KEY(id_cliente)
         REFERENCES T_SGP_CLIENTE(id_cliente),
@@ -49,36 +46,31 @@ ALTER TABLE T_SGP_ENDERECO
     ADD CONSTRAINT CK_NUM_RESID 
     CHECK (nr_residencia > 0);
 
+-- T_SGP_PRODUTO - Aviso é apenas informativo, pode ignorar ou usar sintaxe alternativa
 CREATE TABLE T_SGP_PRODUTO(
-    id_produto      INT             NOT NULL,
+    id_produto      INT             NOT NULL AUTO_INCREMENT,
     nm_produto      VARCHAR(60)     NOT NULL,
     tp_produto      CHAR(1)         NOT NULL,
     ds_produto      VARCHAR(150)    NOT NULL,
-    vl_produto      DECIMAL(6,3)    NOT NULL
+    vl_produto      DECIMAL(6,2)    NOT NULL,
+    
+    PRIMARY KEY (id_produto),  -- Sem nome da constraint (ou use PRIMARY KEY sem CONSTRAINT)
+    CONSTRAINT UN_PRODUTO_NOME UNIQUE (nm_produto),
+    CONSTRAINT CK_PRODUTO_TIPO CHECK (tp_produto IN ('L', 'B', 'C')),
+    CONSTRAINT CK_PRODUTO_VALOR CHECK (vl_produto > 0)
 );
 
-ALTER TABLE T_SGP_PRODUTO
-    ADD CONSTRAINT PK_PRODUTO
-    PRIMARY KEY(id_produto),
-    ADD CONSTRAINT UN_PRODUTO_NOME
-    UNIQUE (nm_produto),
-    ADD CONSTRAINT CK_PRODUTO_TIPO
-    CHECK (tp_produto IN ('L', 'B', 'C')),
-    ADD CONSTRAINT CK_PRODUTO_VALOR
-    CHECK (vl_produto > 0);
-
 CREATE TABLE T_SGP_PEDIDO(
-    id_pedido       INT             NOT NULL,
+    id_pedido       INT             NOT NULL AUTO_INCREMENT PRIMARY KEY,  -- PRIMARY KEY AQUI
     st_pedido       CHAR(1)         NOT NULL,
     nr_pedido       INT             NOT NULL,
     id_cliente      INT             NOT NULL,
     id_endereco     INT             NOT NULL
 );
 
+-- REMOVA A LINHA DA PRIMARY KEY DO ALTER TABLE
 ALTER TABLE T_SGP_PEDIDO
-    ADD CONSTRAINT PK_PEDIDO
-    PRIMARY KEY(id_pedido),
-    ADD CONSTRAINT UN_PEDIDO_NUMERO
+    ADD CONSTRAINT UN_PEDIDO_NUMERO  -- Mantém apenas UNIQUE
     UNIQUE (nr_pedido),
     ADD CONSTRAINT FK_PEDIDO_CLIENTE 
     FOREIGN KEY(id_cliente)
@@ -88,17 +80,16 @@ ALTER TABLE T_SGP_PEDIDO
         REFERENCES T_SGP_ENDERECO(id_endereco),
     ADD CONSTRAINT CK_PEDIDO_STATUS
     CHECK (st_pedido IN ('A', 'E', 'P', 'C'));
-
+    -- NÃO TEM PRIMARY KEY AQUI - JÁ FOI DEFINIDA NA CRIAÇÃO
+    
 CREATE TABLE T_SGP_ITEM_PEDIDO(
-    id_item         INT             NOT NULL,
+    id_item         INT             NOT NULL AUTO_INCREMENT PRIMARY KEY,
     qt_produto      INT             NOT NULL, 
     id_pedido       INT             NOT NULL,
     id_produto      INT             NOT NULL
 );
 
 ALTER TABLE T_SGP_ITEM_PEDIDO
-    ADD CONSTRAINT PK_ITEM_PEDIDO
-    PRIMARY KEY(id_item),
     ADD CONSTRAINT FK_ITEM_PEDIDO_PEDIDO 
     FOREIGN KEY(id_pedido)
         REFERENCES T_SGP_PEDIDO(id_pedido),
@@ -109,7 +100,7 @@ ALTER TABLE T_SGP_ITEM_PEDIDO
     CHECK (qt_produto > 0);
 
 CREATE TABLE T_SGP_AVALIACAO(
-    id_avaliacao    INT             NOT NULL,
+    id_avaliacao    INT             NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_pedido       INT             NOT NULL,
     id_cliente      INT             NOT NULL,
     ds_avaliacao    VARCHAR(255)    NULL,
@@ -118,8 +109,6 @@ CREATE TABLE T_SGP_AVALIACAO(
 );
 
 ALTER TABLE T_SGP_AVALIACAO
-    ADD CONSTRAINT PK_AVALIACAO
-    PRIMARY KEY(id_avaliacao),
     ADD CONSTRAINT FK_AVALIACAO_PEDIDO 
     FOREIGN KEY(id_pedido)
         REFERENCES T_SGP_PEDIDO(id_pedido),
@@ -130,7 +119,7 @@ ALTER TABLE T_SGP_AVALIACAO
     CHECK (vl_nota >= 0);
 
 CREATE TABLE T_SGP_FUNCIONARIO(
-    id_funcionario  INT             NOT NULL,
+    id_funcionario  INT             NOT NULL AUTO_INCREMENT PRIMARY KEY,
     nm_funcionario  VARCHAR(100)    NOT NULL, 
     ds_cargo        VARCHAR(50)     NOT NULL, 
     nr_telefone     CHAR(15)        NOT NULL, 
@@ -141,8 +130,6 @@ CREATE TABLE T_SGP_FUNCIONARIO(
 );
 
 ALTER TABLE T_SGP_FUNCIONARIO
-    ADD CONSTRAINT PK_FUNCIONARIO
-    PRIMARY KEY(id_funcionario),
     ADD CONSTRAINT UN_FUNCIONARIO_CPF
     UNIQUE (nr_cpf),
     ADD CONSTRAINT UN_FUNCIONARIO_TEL
@@ -153,7 +140,7 @@ ALTER TABLE T_SGP_FUNCIONARIO
     CHECK (vl_salario > 0);
 
 CREATE TABLE T_SGP_PAGAMENTO(
-    id_pagamento    INT             NOT NULL,
+    id_pagamento    INT             NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_cliente      INT             NOT NULL,
     id_pedido       INT             NOT NULL,
     tp_pagamento    VARCHAR(8)      NOT NULL,
@@ -163,8 +150,6 @@ CREATE TABLE T_SGP_PAGAMENTO(
 );
 
 ALTER TABLE T_SGP_PAGAMENTO
-    ADD CONSTRAINT PK_PAGAMENTO
-    PRIMARY KEY(id_pagamento),
     ADD CONSTRAINT FK_PAGAMENTO_CLIENTE 
     FOREIGN KEY(id_cliente)
         REFERENCES T_SGP_CLIENTE(id_cliente),
@@ -179,7 +164,7 @@ ALTER TABLE T_SGP_PAGAMENTO
     CHECK (st_pagamento IN ('Paga', 'Não Pago'));
 
 CREATE TABLE T_SGP_ENTREGA(
-    id_entrega      INT             NOT NULL,
+    id_entrega      INT             NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_funcionario  INT             NOT NULL,
     id_pedido       INT             NOT NULL,
     dt_entrega_prev DATETIME        NOT NULL, 
@@ -189,8 +174,6 @@ CREATE TABLE T_SGP_ENTREGA(
 );
 
 ALTER TABLE T_SGP_ENTREGA
-    ADD CONSTRAINT PK_ENTREGA
-    PRIMARY KEY(id_entrega),
     ADD CONSTRAINT FK_ENTREGA_FUNCIONARIO 
     FOREIGN KEY(id_funcionario)
         REFERENCES T_SGP_FUNCIONARIO(id_funcionario),

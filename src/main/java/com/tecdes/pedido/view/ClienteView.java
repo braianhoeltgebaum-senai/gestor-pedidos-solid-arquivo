@@ -7,7 +7,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-public class ClienteView extends JFrame {
+public class ClienteView extends JDialog {
     private ClienteController controller;
     private JTable tabelaClientes;
     private DefaultTableModel tableModel;
@@ -15,30 +15,18 @@ public class ClienteView extends JFrame {
     private JTextField txtNome, txtCadastro, txtEmail, txtTelefone;
     private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar;
     
-    // CONSTRUTOR PADRÃO (sem parâmetros)
-    public ClienteView() {
-        init();
-    }
-    
-    // CONSTRUTOR PARA USO DO LoginView (com parent e modal)
+    // CONSTRUTOR PRINCIPAL (modal)
     public ClienteView(JFrame parent, boolean modal) {
+        super(parent, modal);  // Importante: chama construtor do JDialog
         init();
-        setLocationRelativeTo(parent); // Centraliza em relação à janela pai
-        
-        if (modal) {
-            // Torna a janela modal (bloqueia a janela pai)
-            setAlwaysOnTop(true);
-            // Não podemos usar setModalityType porque JFrame não tem esse método
-            // Para tornar modal, usaríamos JDialog, mas vamos manter JFrame
-        }
+        setLocationRelativeTo(parent);
+        System.out.println("🏗️ ClienteView criada como modal");
     }
     
-    // CONSTRUTOR PARA USO DO MainMenuView (sem parent)
-    public ClienteView(boolean modal) {
-        init();
-        if (modal) {
-            setAlwaysOnTop(true);
-        }
+    // CONSTRUTOR SIMPLES
+    public ClienteView() {
+        this(null, false);  // Chama o construtor principal
+        System.out.println("🏗️ ClienteView criada (não modal)");
     }
     
     private void init() {
@@ -51,7 +39,7 @@ public class ClienteView extends JFrame {
     private void configurarJanela() {
         setTitle("🍔 Gestão de Clientes");
         setSize(900, 600);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
     }
@@ -183,6 +171,7 @@ public class ClienteView extends JFrame {
     }
     
     private void carregarClientes() {
+        System.out.println("🔄 Carregando clientes...");
         tableModel.setRowCount(0); // Limpar tabela
         List<Cliente> clientes = controller.listarTodos();
         
@@ -195,6 +184,8 @@ public class ClienteView extends JFrame {
                 c.getNrTelefone()
             });
         }
+        
+        System.out.println("✅ " + clientes.size() + " cliente(s) carregado(s)");
         
         // Mostrar contagem
         if (clientes.isEmpty()) {
@@ -234,6 +225,8 @@ public class ClienteView extends JFrame {
             String email = txtEmail.getText().trim();
             String telefone = txtTelefone.getText().trim();
             
+            System.out.println("💾 Salvando cliente: " + nome + " (" + cadastro + ")");
+            
             // Validar campos
             if (nome.isEmpty() || cadastro.isEmpty() || email.isEmpty() || telefone.isEmpty()) {
                 JOptionPane.showMessageDialog(this, 
@@ -265,7 +258,7 @@ public class ClienteView extends JFrame {
                     "Aviso", JOptionPane.WARNING_MESSAGE);
             }
             
-            // Verificar se cadastro já existe - TEMOS QUE IMPLEMENTAR
+            // Verificar se cadastro já existe
             if (cadastroExiste(cadastro)) {
                 JOptionPane.showMessageDialog(this,
                     "❌ Cadastro " + cadastro + " já está em uso!\nUse outro número de cadastro.",
@@ -289,13 +282,14 @@ public class ClienteView extends JFrame {
             carregarClientes();
             
         } catch (Exception ex) {
+            System.err.println("💥 Erro ao salvar cliente: " + ex.getMessage());
             JOptionPane.showMessageDialog(this, 
                 "❌ Erro ao salvar cliente: " + ex.getMessage(), 
                 "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
     
-    // Método para verificar se cadastro já existe (implementação local)
+    // Método para verificar se cadastro já existe
     private boolean cadastroExiste(String cadastro) {
         List<Cliente> clientes = controller.listarTodos();
         for (Cliente c : clientes) {
@@ -425,8 +419,16 @@ public class ClienteView extends JFrame {
     // Método estático para abrir como modal
     public static void mostrarTelaModal(JFrame parent) {
         SwingUtilities.invokeLater(() -> {
-            ClienteView view = new ClienteView(parent, true);
-            view.setVisible(true);
+            try {
+                System.out.println("🔄 Iniciando mostrarTelaModal...");
+                ClienteView view = new ClienteView(parent, true);
+                System.out.println("✅ ClienteView instanciada");
+                view.setVisible(true);
+                System.out.println("👁️ ClienteView visível");
+            } catch (Exception e) {
+                System.err.println("💥 Erro em mostrarTelaModal: " + e.getMessage());
+                e.printStackTrace();
+            }
         });
     }
 }

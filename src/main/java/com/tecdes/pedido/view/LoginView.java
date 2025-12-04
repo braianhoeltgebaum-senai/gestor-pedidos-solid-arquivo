@@ -1,9 +1,5 @@
 package com.tecdes.pedido.view;
 
-import com.tecdes.pedido.controller.ClienteController;
-import com.tecdes.pedido.controller.FuncionarioController;
-import com.tecdes.pedido.model.entity.Cliente;
-
 import javax.swing.*;
 import java.awt.*;
 
@@ -14,269 +10,352 @@ public class LoginView extends JFrame {
     private JComboBox<String> cbxTipoLogin;
     private JButton btnLogin;
     private JButton btnCadastrar;
-    private ClienteController clienteController;
-    private FuncionarioController funcionarioController;
     
     public LoginView() {
-        inicializarControllers();
+        System.out.println("🚀 Iniciando LoginView...");
         configurarJanela();
-        criarComponentes();
+        criarComponentesSimples();
         configurarEventos();
-    }
-    
-    private void inicializarControllers() {
-        clienteController = new ClienteController();
-        funcionarioController = new FuncionarioController();
+        setVisible(true);
+        System.out.println("✅ LoginView criada e visível!");
     }
     
     private void configurarJanela() {
         setTitle("Sistema de Lanchonete - Login");
-        setSize(400, 350);
+        setSize(400, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // Centralizar
+        setLocationRelativeTo(null);
         setResizable(false);
-        
-        // Layout
         setLayout(new BorderLayout());
-        
-        // Painel principal
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridBagLayout());
-        panel.setBackground(new Color(240, 240, 240));
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        
-        add(panel, BorderLayout.CENTER);
     }
     
-    private void criarComponentes() {
-        JPanel panel = (JPanel) getContentPane().getComponent(0);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+    private void criarComponentesSimples() {
+        System.out.println("🛠️ Criando componentes SIMPLIFICADOS...");
+        
+        // Painel principal com BoxLayout vertical
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        mainPanel.setBackground(new Color(240, 240, 240));
         
         // Título
         JLabel lblTitulo = new JLabel("🍔 Lanchonete Delícia");
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
-        lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        panel.add(lblTitulo, gbc);
+        lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblTitulo);
+        
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         
         // Subtítulo
         JLabel lblSubtitulo = new JLabel("Sistema de Gestão de Pedidos");
         lblSubtitulo.setFont(new Font("Arial", Font.PLAIN, 14));
-        lblSubtitulo.setHorizontalAlignment(SwingConstants.CENTER);
-        gbc.gridy = 1;
-        panel.add(lblSubtitulo, gbc);
+        lblSubtitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblSubtitulo);
         
-        // Espaço
-        gbc.gridy = 2;
-        panel.add(new JLabel(" "), gbc);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 30)));
+        
+        // Painel de formulário
+        JPanel formPanel = new JPanel(new GridLayout(4, 2, 10, 10));
+        formPanel.setOpaque(false);
         
         // Tipo de Login
-        JLabel lblTipoLogin = new JLabel("Tipo de Login:");
-        gbc.gridwidth = 1;
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        panel.add(lblTipoLogin, gbc);
-        
+        formPanel.add(new JLabel("Tipo de Login:"));
         String[] tipos = {"Cliente", "Funcionário", "Gerente"};
         cbxTipoLogin = new JComboBox<>(tipos);
-        gbc.gridx = 1;
-        panel.add(cbxTipoLogin, gbc);
+        formPanel.add(cbxTipoLogin);
         
         // Email/CPF
-        JLabel lblEmail = new JLabel("Email/CPF:");
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        panel.add(lblEmail, gbc);
-        
-        txtEmail = new JTextField(20);
-        gbc.gridx = 1;
-        panel.add(txtEmail, gbc);
+        formPanel.add(new JLabel("Email/CPF:"));
+        txtEmail = new JTextField();
+        formPanel.add(txtEmail);
         
         // Senha/Cadastro
-        JLabel lblSenha = new JLabel("Senha/Cadastro:");
-        gbc.gridx = 0;
-        gbc.gridy = 5;
-        panel.add(lblSenha, gbc);
+        formPanel.add(new JLabel("Senha/Cadastro:"));
+        txtSenha = new JPasswordField();
+        formPanel.add(txtSenha);
         
-        txtSenha = new JPasswordField(20);
-        gbc.gridx = 1;
-        panel.add(txtSenha, gbc);
+        JPanel formContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        formContainer.setOpaque(false);
+        formContainer.add(formPanel);
+        mainPanel.add(formContainer);
         
-        // Botões
-        JPanel panelBotoes = new JPanel(new FlowLayout());
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         
+        // Painel de botões
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
+        buttonPanel.setOpaque(false);
+        
+        // Botão Login
         btnLogin = new JButton("Entrar");
         btnLogin.setBackground(new Color(70, 130, 180));
         btnLogin.setForeground(Color.WHITE);
         btnLogin.setFont(new Font("Arial", Font.BOLD, 14));
-        btnLogin.setPreferredSize(new Dimension(120, 35));
+        btnLogin.setPreferredSize(new Dimension(120, 40));
         
+        // Botão Cadastrar
         btnCadastrar = new JButton("Cadastrar Cliente");
         btnCadastrar.setBackground(new Color(46, 125, 50));
         btnCadastrar.setForeground(Color.WHITE);
-        btnCadastrar.setPreferredSize(new Dimension(150, 35));
+        btnCadastrar.setFont(new Font("Arial", Font.PLAIN, 13));
+        btnCadastrar.setPreferredSize(new Dimension(150, 40));
         
-        panelBotoes.add(btnLogin);
-        panelBotoes.add(btnCadastrar);
+        // Adiciona os botões
+        buttonPanel.add(btnLogin);
+        buttonPanel.add(btnCadastrar);
         
-        gbc.gridx = 0;
-        gbc.gridy = 6;
-        gbc.gridwidth = 2;
-        panel.add(panelBotoes, gbc);
+        // Container para centralizar
+        JPanel buttonContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonContainer.setOpaque(false);
+        buttonContainer.add(buttonPanel);
+        
+        mainPanel.add(buttonContainer);
+        
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         
         // Rodapé
         JLabel lblRodape = new JLabel("© 2025 - TecDes - Sistema de Lanchonete");
         lblRodape.setFont(new Font("Arial", Font.PLAIN, 10));
-        lblRodape.setHorizontalAlignment(SwingConstants.CENTER);
-        gbc.gridy = 7;
-        panel.add(lblRodape, gbc);
+        lblRodape.setForeground(Color.GRAY);
+        lblRodape.setAlignmentX(Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblRodape);
+        
+        // Adiciona tudo à janela
+        add(mainPanel, BorderLayout.CENTER);
+        
+        // Força atualização
+        revalidate();
+        repaint();
+        
+        System.out.println("✅ Componentes criados!");
     }
     
     private void configurarEventos() {
-        // Botão Login
-        btnLogin.addActionListener(e -> fazerLogin());
+        System.out.println("⚡ Configurando eventos...");
         
         // Botão Cadastrar
-        btnCadastrar.addActionListener(e -> abrirCadastroCliente());
+        if (btnCadastrar != null) {
+            btnCadastrar.addActionListener(e -> {
+                System.out.println("🎯 Botão Cadastrar Cliente clicado!");
+                
+                // Abre a tela COMPLETA de cadastro de clientes
+                abrirTelaCadastroClientes();
+            });
+        }
         
-        // Enter no campo de senha também faz login
-        txtSenha.addActionListener(e -> fazerLogin());
+        // Botão Login
+        if (btnLogin != null) {
+            btnLogin.addActionListener(e -> {
+                System.out.println("🎯 Botão Login clicado!");
+                fazerLogin();
+            });
+        }
+        
+        // Enter no campo senha
+        if (txtSenha != null) {
+            txtSenha.addActionListener(e -> fazerLogin());
+        }
     }
     
     private void fazerLogin() {
+        System.out.println("Tentando login...");
+        
+        if (txtEmail == null || txtSenha == null || cbxTipoLogin == null) {
+            JOptionPane.showMessageDialog(this, "Sistema não inicializado corretamente", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
         String tipo = (String) cbxTipoLogin.getSelectedItem();
         String usuario = txtEmail.getText().trim();
         String senha = new String(txtSenha.getPassword()).trim();
         
         if (usuario.isEmpty() || senha.isEmpty()) {
-            JOptionPane.showMessageDialog(this, 
-                "Preencha todos os campos!", 
-                "Aviso", 
-                JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Preencha todos os campos!", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
-        try {
-            boolean sucesso = false;
-            String mensagem = "";
-            
-            switch (tipo) {
-                case "Cliente":
-                    // Cliente usa email + número de cadastro (3 dígitos)
-                    System.out.println("🔐 Tentando login como CLIENTE: Email=" + usuario + ", Cadastro=" + senha);
-                    sucesso = loginCliente(usuario, senha);
-                    mensagem = sucesso ? "Cliente autenticado" : "Falha na autenticação do cliente";
-                    break;
-                    
-                case "Funcionário":
-                case "Gerente":
-                    // Funcionário/Gerente usa CPF + senha
-                    System.out.println("🔐 Tentando login como FUNCIONÁRIO: CPF=" + usuario + ", Senha=" + senha);
-                    sucesso = loginFuncionario(usuario, senha);
-                    mensagem = sucesso ? "Funcionário autenticado" : "Falha na autenticação do funcionário";
-                    break;
-            }
-            
-            System.out.println("✅ " + mensagem);
-            
-            if (sucesso) {
-                JOptionPane.showMessageDialog(this, 
-                    "Login realizado com sucesso!", 
-                    "Sucesso", 
-                    JOptionPane.INFORMATION_MESSAGE);
-                    
-                // Abrir menu principal
-                abrirMenuPrincipal(tipo);
+        // Validação simples de login
+        // Para cliente: email + número de 3 dígitos
+        // Para funcionário/gerente: CPF + senha
+        
+        boolean loginValido = false;
+        
+        // Validação baseada no tipo de usuário
+        switch (tipo) {
+            case "Cliente":
+                // Para cliente: email deve conter @ e senha deve ter 3 dígitos
+                if (usuario.contains("@") && senha.matches("\\d{3}")) {
+                    loginValido = true;
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                        "Para cliente:\n" +
+                        "• Email: deve ser válido (ex: cliente@email.com)\n" +
+                        "• Senha: número de cadastro de 3 dígitos (ex: 123)",
+                        "Formato Inválido",
+                        JOptionPane.WARNING_MESSAGE);
+                }
+                break;
                 
-                // Fechar tela de login
-                this.dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, 
-                    "Login falhou! Verifique suas credenciais.\n" +
-                    "Para cliente: use email + número de cadastro (3 dígitos)\n" +
-                    "Para funcionário: use CPF + senha", 
-                    "Erro no Login", 
-                    JOptionPane.ERROR_MESSAGE);
-            }
+            case "Funcionário":
+            case "Gerente":
+                // Para funcionário/gerente: CPF deve ter 11 dígitos
+                if (usuario.matches("\\d{11}") && !senha.isEmpty()) {
+                    loginValido = true;
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                        "Para " + tipo.toLowerCase() + ":\n" +
+                        "• CPF: 11 dígitos (sem pontos ou traços)\n" +
+                        "• Senha: não pode estar vazia",
+                        "Formato Inválido",
+                        JOptionPane.WARNING_MESSAGE);
+                }
+                break;
+        }
+        
+        if (loginValido) {
+            // Login bem-sucedido
+            System.out.println("✅ Login bem-sucedido como: " + tipo);
             
-        } catch (Exception ex) {
-            System.err.println("❌ Erro no login: " + ex.getMessage());
-            ex.printStackTrace();
             JOptionPane.showMessageDialog(this, 
-                "Erro no login: " + ex.getMessage(), 
-                "Erro", 
+                "✅ Login realizado com sucesso!\n\n" +
+                "👤 Tipo: " + tipo + "\n" +
+                "📋 Usuário: " + usuario + "\n\n" +
+                "Abrindo menu principal...",
+                "Login Bem-sucedido",
+                JOptionPane.INFORMATION_MESSAGE);
+            
+            // Abre o menu principal
+            abrirMenuPrincipal(tipo);
+            
+        } else {
+            JOptionPane.showMessageDialog(this,
+                "❌ Login falhou!\n\n" +
+                "Verifique suas credenciais.\n" +
+                "Para cliente: use email + número de cadastro (3 dígitos)\n" +
+                "Para funcionário/gerente: use CPF (11 dígitos) + senha",
+                "Erro no Login",
                 JOptionPane.ERROR_MESSAGE);
         }
     }
     
-    private boolean loginCliente(String email, String cadastro) {
-    try {
-        System.out.println("\n=== TENTATIVA DE LOGIN CLIENTE ===");
-        System.out.println("📧 Email: " + email);
-        System.out.println("🔢 Cadastro: " + cadastro);
+    private void abrirMenuPrincipal(String tipoUsuario) {
+        System.out.println("🚀 Abrindo menu principal para: " + tipoUsuario);
         
-        // Primeiro valida os dados
-        if (!clienteController.validarLogin(email, cadastro)) {
-            System.out.println("❌ Validação inicial falhou");
-            return false;
-        }
+        // Fecha a tela de login
+        this.dispose();
         
-        System.out.println("✅ Validação inicial OK");
-        
-        // Chama o login (retorna boolean)
-        boolean sucesso = clienteController.login(email, cadastro);
-        
-        if (sucesso) {
-            // Obtém o cliente autenticado
-            Cliente cliente = clienteController.getClienteLogado();
-            if (cliente != null) {
-                System.out.println("✅ Cliente autenticado com sucesso!");
-                System.out.println("👤 Nome: " + cliente.getNmCliente());
-                System.out.println("📧 Email: " + cliente.getDsEmail());
-                System.out.println("🔢 Cadastro: " + cliente.getNrCadastro());
-                return true;
-            } else {
-                System.out.println("⚠️ Login retornou true mas cliente é null");
-                return false;
-            }
-        } else {
-            System.out.println("❌ Login falhou - credenciais incorretas");
-            return false;
-        }
-        
-    } catch (Exception e) {
-        System.err.println("💥 Erro no login do cliente: " + e.getMessage());
-        e.printStackTrace();
-        return false;
-    }
-}
-    
-    private boolean loginFuncionario(String cpf, String senha) {
-        try {
-            boolean sucesso = funcionarioController.login(cpf, senha);
-            System.out.println("Login funcionário: " + (sucesso ? "✅ Sucesso" : "❌ Falha"));
-            return sucesso;
-        } catch (Exception e) {
-            System.err.println("❌ Erro no login do funcionário: " + e.getMessage());
-            return false;
-        }
-    }
-    
-    private void abrirCadastroCliente() {
+        // Abre o menu principal
         SwingUtilities.invokeLater(() -> {
-            ClienteView clienteView = new ClienteView();
-            clienteView.setVisible(true);
+            try {
+                MainMenuView menuView = new MainMenuView(tipoUsuario);
+                menuView.setVisible(true);
+                System.out.println("✅ MainMenuView aberta com sucesso!");
+            } catch (Exception e) {
+                System.err.println("❌ Erro ao abrir MainMenuView: " + e.getMessage());
+                e.printStackTrace();
+                
+                // Fallback: mostra mensagem de erro
+                JOptionPane.showMessageDialog(null,
+                    "Erro ao abrir menu principal: " + e.getMessage() + "\n\n" +
+                    "Tente reiniciar o sistema.",
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+            }
         });
     }
     
-    private void abrirMenuPrincipal(String tipoUsuario) {
+    private void abrirTelaCadastroClientes() {
+        System.out.println("📝 Abrindo tela completa de cadastro de clientes...");
+        
+        try {
+            // Cria e mostra a tela de cadastro de clientes
+            SwingUtilities.invokeLater(() -> {
+                ClienteView clienteView = new ClienteView(this, true); // true = modal
+                clienteView.setVisible(true);
+                System.out.println("✅ Tela ClienteView aberta com sucesso!");
+            });
+            
+        } catch (Exception e) {
+            System.err.println("❌ Erro ao abrir ClienteView: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Fallback: abre um diálogo simples se a ClienteView falhar
+            JOptionPane.showMessageDialog(this,
+                "Não foi possível abrir a tela de cadastro completa.\n" +
+                "Erro: " + e.getMessage() + "\n\n" +
+                "Abrindo formulário simples...",
+                "Aviso",
+                JOptionPane.WARNING_MESSAGE);
+                
+            abrirCadastroSimples();
+        }
+    }
+    
+    private void abrirCadastroSimples() {
+        // Diálogo simples de cadastro (fallback)
+        JDialog dialog = new JDialog(this, "Cadastro Rápido de Cliente", true);
+        dialog.setSize(350, 300);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout(10, 10));
+        
+        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        JTextField txtNome = new JTextField();
+        JTextField txtEmail = new JTextField();
+        JTextField txtTelefone = new JTextField();
+        
+        panel.add(new JLabel("Nome:"));
+        panel.add(txtNome);
+        panel.add(new JLabel("Email:"));
+        panel.add(txtEmail);
+        panel.add(new JLabel("Telefone:"));
+        panel.add(txtTelefone);
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+        
+        JButton btnSalvar = new JButton("Salvar");
+        btnSalvar.addActionListener(e -> {
+            JOptionPane.showMessageDialog(dialog, 
+                "Cliente salvo (simulação)\n\n" +
+                "Nome: " + txtNome.getText() + "\n" +
+                "Email: " + txtEmail.getText() + "\n" +
+                "Telefone: " + txtTelefone.getText(),
+                "Cadastro Simulado",
+                JOptionPane.INFORMATION_MESSAGE);
+            dialog.dispose();
+        });
+        
+        JButton btnCancelar = new JButton("Cancelar");
+        btnCancelar.addActionListener(e -> dialog.dispose());
+        
+        JPanel panelBotoes = new JPanel(new FlowLayout());
+        panelBotoes.add(btnCancelar);
+        panelBotoes.add(btnSalvar);
+        
+        dialog.add(panel, BorderLayout.CENTER);
+        dialog.add(panelBotoes, BorderLayout.SOUTH);
+        
+        dialog.setVisible(true);
+    }
+    
+    // MAIN para teste
+    public static void main(String[] args) {
+        System.out.println("🚀 ===== INICIANDO SISTEMA DE LANCHONETE ===== 🚀");
+        
         SwingUtilities.invokeLater(() -> {
-            MainMenuView menuView = new MainMenuView(tipoUsuario);
-            menuView.setVisible(true);
+            try {
+                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
+            LoginView login = new LoginView();
+            System.out.println("🎯 Sistema iniciado com sucesso!");
+            
+            // Verificação
+            System.out.println("\n=== STATUS DO SISTEMA ===");
+            System.out.println("Botão Login: " + (login.btnLogin != null ? "✅ OK" : "❌ FALHO"));
+            System.out.println("Botão Cadastrar: " + (login.btnCadastrar != null ? "✅ OK" : "❌ FALHO"));
         });
     }
 }
