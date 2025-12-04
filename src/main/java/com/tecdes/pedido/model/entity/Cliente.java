@@ -16,7 +16,7 @@ public class Cliente {
         this.nrTelefone = nrTelefone;
     }
 
-    // Getters e Setters CORRETOS
+    // Getters e Setters CORRETOS (mantenha todos)
     public int getIdCliente() {
         return idCliente;
     }
@@ -84,6 +84,35 @@ public class Cliente {
         this.nrTelefone = nrTelefone;
     }
 
+    // ✅ MÉTODOS DE AUTENTICAÇÃO ADICIONADOS:
+    
+    // Verifica se email e número de cadastro correspondem
+    public boolean autenticar(String email, String numeroCadastro) {
+        if (email == null || numeroCadastro == null) {
+            return false;
+        }
+        return this.dsEmail.equalsIgnoreCase(email) && 
+               this.nrCadastro.equals(numeroCadastro);
+    }
+    
+    // Verifica apenas email (para recuperação de conta)
+    public boolean emailCorresponde(String email) {
+        return this.dsEmail.equalsIgnoreCase(email);
+    }
+    
+    // Para uso no sistema (identificação)
+    public String getTipoUsuario() {
+        return "CLIENTE";
+    }
+    
+    public boolean podeFazerPedidos() {
+        return true; // Clientes sempre podem fazer pedidos
+    }
+    
+    public String getInfoLogin() {
+        return nmCliente + " (Cadastro: " + nrCadastro + ")";
+    }
+
     @Override
     public String toString() {
         return "Cliente [id=" + idCliente + 
@@ -92,4 +121,4 @@ public class Cliente {
                ", email=" + dsEmail + 
                ", telefone=" + nrTelefone + "]";
     }
-}//alterado
+}

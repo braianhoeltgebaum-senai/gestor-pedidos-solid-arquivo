@@ -7,10 +7,64 @@ import java.util.List;
 public class ClienteService {
 
     private final ClienteRepository clienteRepository;
+    private Cliente clienteAutenticado; // ✅ Armazena cliente logado
 
     public ClienteService(ClienteRepository clienteRepository) {
         this.clienteRepository = clienteRepository;
+        this.clienteAutenticado = null; // Inicialmente ninguém logado
     }
+
+    // ✅ MÉTODOS DE AUTENTICAÇÃO ADICIONADOS:
+    
+    // Autentica cliente usando email e número de cadastro
+    public Cliente autenticarCliente(String email, String numeroCadastro) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email é obrigatório");
+        }
+        if (numeroCadastro == null || numeroCadastro.trim().isEmpty()) {
+            throw new IllegalArgumentException("Número de cadastro é obrigatório");
+        }
+        
+        // Busca cliente pelo email
+        Cliente cliente = clienteRepository.findByEmail(email);
+        
+        if (cliente == null) {
+            throw new IllegalArgumentException("Cliente não encontrado com este email");
+        }
+        
+        // Verifica se o número de cadastro está correto
+        if (!cliente.autenticar(email, numeroCadastro)) {
+            throw new IllegalArgumentException("Número de cadastro incorreto");
+        }
+        
+        // Se tudo OK, autentica o cliente
+        this.clienteAutenticado = cliente;
+        System.out.println("✅ Cliente autenticado: " + cliente.getNmCliente());
+        return cliente;
+    }
+    
+    // Desloga o cliente
+    public void logoutCliente() {
+        if (clienteAutenticado != null) {
+            System.out.println("🚪 Cliente deslogado: " + clienteAutenticado.getNmCliente());
+            this.clienteAutenticado = null;
+        }
+    }
+    
+    // Verifica se há cliente autenticado
+    public boolean isClienteAutenticado() {
+        return clienteAutenticado != null;
+    }
+    
+    // Retorna o cliente autenticado atual
+    public Cliente getClienteAutenticado() {
+        if (!isClienteAutenticado()) {
+            throw new IllegalStateException("Nenhum cliente autenticado no momento");
+        }
+        return clienteAutenticado;
+    }
+    
+    // MÉTODOS EXISTENTES (mantenha todos):
 
     // CORRIGIDO: Usa campos corretos
     public Cliente cadastrarCliente(Cliente cliente) {
@@ -90,6 +144,11 @@ public class ClienteService {
 
     // CORRIGIDO: Mudou de Long para int
     public void excluirCliente(int id) {
+        // Não permite excluir cliente autenticado
+        if (isClienteAutenticado() && clienteAutenticado.getIdCliente() == id) {
+            throw new IllegalArgumentException("Não é possível excluir o próprio cliente enquanto autenticado");
+        }
+        
         if (!clienteRepository.existsById(id)) {
             throw new RuntimeException("Cliente ID " + id + " não pode ser excluído, pois não existe.");
         }

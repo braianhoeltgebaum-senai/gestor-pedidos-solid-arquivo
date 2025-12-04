@@ -16,13 +16,13 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         
         <!-- VERSÕES CORRETAS E TESTADAS -->
-        <mysql.version>8.0.33</mysql.version>    <!-- CORRIGIDO! -->
+        <mysql.version>8.0.33</mysql.version>   
         <h2.version>2.2.224</h2.version>
         <junit.version>5.10.2</junit.version>
     </properties>
 
     <dependencies>
-        <!-- MySQL Database - VERSÃO QUE FUNCIONA -->
+        <!-- MySQL Database -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>

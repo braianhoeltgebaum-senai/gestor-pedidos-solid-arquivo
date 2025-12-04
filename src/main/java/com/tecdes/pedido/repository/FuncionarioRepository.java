@@ -1,25 +1,12 @@
 package com.tecdes.pedido.repository;
 
-
-import com.tecdes.pedido.model.entity.Gerente;
-
-
-import java.util.ArrayList;
+import com.tecdes.pedido.model.entity.Funcionario;
 import java.util.List;
+import java.util.Optional;
 
-
-public class FuncionarioRepository {
-
-
-    private List<Gerente> funcionarios = new ArrayList<>();
-
-
-    public void salvar(Gerente funcionario){
-        funcionarios.add(funcionario);
-    }
-
-
-    public List<Gerente> listar(){
-        return funcionarios;
-    }
+public interface FuncionarioRepository {
+    void save(Funcionario funcionario);
+    Optional<Funcionario> findByCpf(String cpf);
+    List<Funcionario> findAll();
+    List<Funcionario> findByCargo(String cargo);
 }

@@ -6,25 +6,27 @@ import java.time.LocalDateTime;
 public class Funcionario {
     private int idFuncionario;          // id_funcionario INT
     private String nmFuncionario;       // nm_funcionario VARCHAR(100)
-    private String dsCargo;             // ds_cargo VARCHAR(50)
+    private String dsCargo;             // ds_cargo VARCHAR(50) - "Gerente", "Atendente", etc.
     private String nrTelefone;          // nr_telefone CHAR(15)
-    private String nrCpf;               // nr_cpf CHAR(14)
+    private String nrCpf;               // nr_cpf CHAR(14) - pode ser usado como login
     private LocalDateTime dtAdmissao;   // dt_admissao DATETIME
     private LocalDateTime dtDemissao;   // dt_demissao DATETIME (pode ser null)
     private BigDecimal vlSalario;       // vl_salario DECIMAL(6,2)
+    private String senhaAcesso;         // Nova: senha para login (não está na tabela? Adicione ou use CPF)
 
     public Funcionario() {
         this.dtAdmissao = LocalDateTime.now();
     }
 
     public Funcionario(String nmFuncionario, String dsCargo, String nrTelefone, 
-                       String nrCpf, BigDecimal vlSalario) {
+                       String nrCpf, BigDecimal vlSalario, String senhaAcesso) {
         this();
         this.nmFuncionario = nmFuncionario;
         this.dsCargo = dsCargo;
         this.nrTelefone = nrTelefone;
         this.nrCpf = nrCpf;
         this.vlSalario = vlSalario;
+        this.senhaAcesso = senhaAcesso;
     }
 
     // Getters e Setters
@@ -103,7 +105,6 @@ public class Funcionario {
     }
 
     public void setDtDemissao(LocalDateTime dtDemissao) {
-        // Valida: demissão não pode ser antes da admissão
         if (dtDemissao != null && dtDemissao.isBefore(dtAdmissao)) {
             throw new IllegalArgumentException("Data de demissão não pode ser anterior à admissão");
         }
@@ -121,13 +122,61 @@ public class Funcionario {
         this.vlSalario = vlSalario;
     }
 
+    public String getSenhaAcesso() {
+        return senhaAcesso;
+    }
+
+    public void setSenhaAcesso(String senhaAcesso) {
+        if (senhaAcesso == null || senhaAcesso.length() < 4) {
+            throw new IllegalArgumentException("Senha deve ter no mínimo 4 caracteres");
+        }
+        this.senhaAcesso = senhaAcesso;
+    }
+
+    // ✅ MÉTODOS DE AUTENTICAÇÃO ADICIONADOS:
+    
+    // Verifica se CPF e senha correspondem
+    public boolean autenticar(String cpf, String senha) {
+        if (cpf == null || senha == null) {
+            return false;
+        }
+        // Remove pontos e traço do CPF para comparação
+        String cpfLimpo = this.nrCpf.replace(".", "").replace("-", "");
+        String cpfDigitadoLimpo = cpf.replace(".", "").replace("-", "");
+        
+        return cpfLimpo.equals(cpfDigitadoLimpo) && 
+               this.senhaAcesso.equals(senha);
+    }
+    
+    // Verifica cargo
+    public boolean isGerente() {
+        return "Gerente".equalsIgnoreCase(dsCargo) || 
+               "Administrador".equalsIgnoreCase(dsCargo);
+    }
+    
+    public boolean isAtendente() {
+        return "Atendente".equalsIgnoreCase(dsCargo) || 
+               "Vendedor".equalsIgnoreCase(dsCargo) ||
+               "Caixa".equalsIgnoreCase(dsCargo);
+    }
+    
     public boolean isAtivo() {
         return dtDemissao == null;
+    }
+    
+    // Verifica permissões
+    public boolean podeGerenciar() {
+        return isGerente() && isAtivo();
+    }
+    
+    public boolean podeAtender() {
+        return (isGerente() || isAtendente()) && isAtivo();
     }
 
     @Override
     public String toString() {
-        return nmFuncionario + " - " + dsCargo + " - Salário: R$ " + vlSalario + 
-               (isAtivo() ? " (Ativo)" : " (Demitido em: " + dtDemissao + ")");
+        return nmFuncionario + " - " + dsCargo + 
+               (isAtivo() ? " (Ativo)" : " (Inativo)") + 
+               " - CPF: " + nrCpf;
     }
 }
