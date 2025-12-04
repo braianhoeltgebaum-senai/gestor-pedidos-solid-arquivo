@@ -1,149 +1,295 @@
 package com.tecdes.pedido.model.DAO;
 
+
 import com.tecdes.pedido.config.ConnectionFactory;
 import com.tecdes.pedido.model.entity.Pedido;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class PedidoDAO {
 
-    // INSERIR
+
+    // INSERIR PEDIDO
     public void inserir(Pedido pedido) {
-        // Incluindo a coluna 'id_cliente' para evitar NULL em chaves estrangeiras
-        String sql = "INSERT INTO pedido (data_hora, status, valor_total, tipo_pagamento, id_cliente) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO T_SGP_PEDIDO (st_pedido, nr_pedido, id_cliente, id_endereco) VALUES (?, ?, ?, ?)";
+
 
         try (Connection conn = ConnectionFactory.getConnection();
-             // Permite obter o ID gerado pelo banco
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            stmt.setTimestamp(1, Timestamp.valueOf(pedido.getDataHora()));
-            stmt.setString(2, pedido.getStatus());
-            stmt.setDouble(3, pedido.getValorTotal());
-            stmt.setString(4, pedido.getTipoPagamento());
-            
-            // Supondo que Cliente está associado (Necessário para FK)
-            if (pedido.getCliente() != null) {
-                stmt.setLong(5, pedido.getCliente().getIdCliente()); 
-            } else {
-                stmt.setNull(5, Types.BIGINT);
-            }
-            
+
+            stmt.setString(1, String.valueOf(pedido.getStPedido())); // char para String
+            stmt.setInt(2, pedido.getNrPedido());
+            stmt.setInt(3, pedido.getIdCliente());
+            stmt.setInt(4, pedido.getIdEndereco());
             stmt.executeUpdate();
 
-            // Pega o ID gerado pelo banco e seta na entidade
+
+            // Pega o ID gerado
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
-                    pedido.setId(rs.getLong(1)); // <-- USANDO Long
+                    pedido.setIdPedido(rs.getInt(1)); // int, não Long
                 }
             }
 
-            System.out.println("Pedido inserido com sucesso!");
+
+            System.out.println("✅ Pedido inserido com ID: " + pedido.getIdPedido());
+
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao inserir pedido.", e);
+            throw new RuntimeException("❌ Erro ao inserir pedido: " + e.getMessage(), e);
         }
     }
 
-    // BUSCAR TODOS
+
+    // BUSCAR TODOS PEDIDOS
     public List<Pedido> buscarTodos() {
-        // Adicionando 'id_cliente' na seleção
-        String sql = "SELECT id_pedido, data_hora, status, valor_total, tipo_pagamento, id_cliente FROM pedido";
+        String sql = "SELECT id_pedido, st_pedido, nr_pedido, id_cliente, id_endereco FROM T_SGP_PEDIDO ORDER BY id_pedido DESC";
         List<Pedido> pedidos = new ArrayList<>();
+
 
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
-            while (rs.next()) {
-                Pedido p = new Pedido();
-                // ATUALIZADO: Usando getLong para manter consistência com a entidade
-                p.setId(rs.getLong("id_pedido")); 
-                p.setDataHora(rs.getTimestamp("data_hora").toLocalDateTime());
-                p.setStatus(rs.getString("status"));
-                p.setValorTotal(rs.getDouble("valor_total"));
-                p.setTipoPagamento(rs.getString("tipo_pagamento"));
-                
-                // Nota: A lógica para carregar o objeto Cliente relacionado não está aqui,
-                // mas seria crucial em um sistema real.
 
-                pedidos.add(p);
+            while (rs.next()) {
+                pedidos.add(mapResultSetToPedido(rs));
             }
 
+
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao buscar pedidos.", e);
+            throw new RuntimeException("❌ Erro ao buscar pedidos: " + e.getMessage(), e);
         }
+
 
         return pedidos;
     }
 
-    // BUSCAR POR ID
-    public Pedido buscarPorId(Long id) { // ATUALIZADO: Recebe Long
-        String sql = "SELECT id_pedido, data_hora, status, valor_total, tipo_pagamento, id_cliente FROM pedido WHERE id_pedido = ?";
-        Pedido pedido = null;
 
+    // BUSCAR PEDIDO POR ID
+    public Pedido buscarPorId(int id) { // int, não Long
+        String sql = "SELECT id_pedido, st_pedido, nr_pedido, id_cliente, id_endereco FROM T_SGP_PEDIDO WHERE id_pedido = ?";
+       
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setLong(1, id); // ATUALIZADO: Usando setLong
 
+            stmt.setInt(1, id);
+           
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    pedido = new Pedido();
-                    pedido.setId(rs.getLong("id_pedido")); // ATUALIZADO: Usando getLong
-                    pedido.setDataHora(rs.getTimestamp("data_hora").toLocalDateTime());
-                    pedido.setStatus(rs.getString("status"));
-                    pedido.setValorTotal(rs.getDouble("valor_total"));
-                    pedido.setTipoPagamento(rs.getString("tipo_pagamento"));
+                    return mapResultSetToPedido(rs);
                 }
             }
 
+
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao buscar pedido por ID.", e);
+            throw new RuntimeException("❌ Erro ao buscar pedido por ID: " + e.getMessage(), e);
         }
 
-        return pedido;
+
+        return null;
     }
 
-    // ATUALIZAR
+
+    // BUSCAR PEDIDOS POR CLIENTE
+    public List<Pedido> buscarPorCliente(int idCliente) {
+        String sql = "SELECT id_pedido, st_pedido, nr_pedido, id_cliente, id_endereco FROM T_SGP_PEDIDO WHERE id_cliente = ? ORDER BY id_pedido DESC";
+        List<Pedido> pedidos = new ArrayList<>();
+
+
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+
+            stmt.setInt(1, idCliente);
+           
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    pedidos.add(mapResultSetToPedido(rs));
+                }
+            }
+
+
+        } catch (SQLException e) {
+            throw new RuntimeException("❌ Erro ao buscar pedidos do cliente: " + e.getMessage(), e);
+        }
+
+
+        return pedidos;
+    }
+
+
+    // BUSCAR PEDIDOS POR STATUS
+    public List<Pedido> buscarPorStatus(char status) {
+        String sql = "SELECT id_pedido, st_pedido, nr_pedido, id_cliente, id_endereco FROM T_SGP_PEDIDO WHERE st_pedido = ? ORDER BY id_pedido DESC";
+        List<Pedido> pedidos = new ArrayList<>();
+
+
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+
+            stmt.setString(1, String.valueOf(status));
+           
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    pedidos.add(mapResultSetToPedido(rs));
+                }
+            }
+
+
+        } catch (SQLException e) {
+            throw new RuntimeException("❌ Erro ao buscar pedidos por status: " + e.getMessage(), e);
+        }
+
+
+        return pedidos;
+    }
+
+
+    // ATUALIZAR PEDIDO
     public void atualizar(Pedido pedido) {
-        String sql = "UPDATE pedido SET data_hora=?, status=?, valor_total=?, tipo_pagamento=? WHERE id_pedido=?";
+        String sql = "UPDATE T_SGP_PEDIDO SET st_pedido = ?, nr_pedido = ?, id_cliente = ?, id_endereco = ? WHERE id_pedido = ?";
+
 
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setTimestamp(1, Timestamp.valueOf(pedido.getDataHora()));
-            stmt.setString(2, pedido.getStatus());
-            stmt.setDouble(3, pedido.getValorTotal());
-            stmt.setString(4, pedido.getTipoPagamento());
-            
-            // ATUALIZADO: Usando getLong (getId)
-            stmt.setLong(5, pedido.getId()); 
 
+            stmt.setString(1, String.valueOf(pedido.getStPedido()));
+            stmt.setInt(2, pedido.getNrPedido());
+            stmt.setInt(3, pedido.getIdCliente());
+            stmt.setInt(4, pedido.getIdEndereco());
+            stmt.setInt(5, pedido.getIdPedido());
             stmt.executeUpdate();
 
-            System.out.println("Pedido atualizado com sucesso!");
+
+            System.out.println("✅ Pedido atualizado: " + pedido.getIdPedido());
+
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao atualizar pedido.", e);
+            throw new RuntimeException("❌ Erro ao atualizar pedido: " + e.getMessage(), e);
         }
     }
 
-    // DELETAR
-    public void deletar(Long id) { // ATUALIZADO: Recebe Long
-        String sql = "DELETE FROM pedido WHERE id_pedido=?";
+
+    // ATUALIZAR APENAS STATUS DO PEDIDO
+    public void atualizarStatus(int idPedido, char novoStatus) {
+        String sql = "UPDATE T_SGP_PEDIDO SET st_pedido = ? WHERE id_pedido = ?";
+
 
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setLong(1, id); // ATUALIZADO: Usando setLong
+
+            stmt.setString(1, String.valueOf(novoStatus));
+            stmt.setInt(2, idPedido);
             stmt.executeUpdate();
 
-            System.out.println("Pedido deletado com sucesso!");
+
+            System.out.println("✅ Status do pedido " + idPedido + " atualizado para: " + novoStatus);
+
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao deletar pedido.", e);
+            throw new RuntimeException("❌ Erro ao atualizar status do pedido: " + e.getMessage(), e);
         }
+    }
+
+
+    // DELETAR PEDIDO
+    public void deletar(int id) { // int, não Long
+        // Primeiro deleta os itens do pedido (por causa da FK)
+        String sqlItens = "DELETE FROM T_SGP_ITEM_PEDIDO WHERE id_pedido = ?";
+        String sqlPedido = "DELETE FROM T_SGP_PEDIDO WHERE id_pedido = ?";
+
+
+        try (Connection conn = ConnectionFactory.getConnection()) {
+            conn.setAutoCommit(false); // Inicia transação
+           
+            try (PreparedStatement stmtItens = conn.prepareStatement(sqlItens);
+                 PreparedStatement stmtPedido = conn.prepareStatement(sqlPedido)) {
+               
+                // 1. Deleta itens do pedido
+                stmtItens.setInt(1, id);
+                stmtItens.executeUpdate();
+               
+                // 2. Deleta o pedido
+                stmtPedido.setInt(1, id);
+                int rowsAffected = stmtPedido.executeUpdate();
+               
+                conn.commit(); // Confirma transação
+               
+                if (rowsAffected > 0) {
+                    System.out.println("✅ Pedido deletado: " + id);
+                } else {
+                    System.out.println("⚠️ Pedido não encontrado: " + id);
+                }
+               
+            } catch (SQLException e) {
+                conn.rollback(); // Desfaz em caso de erro
+                throw e;
+            }
+           
+        } catch (SQLException e) {
+            throw new RuntimeException("❌ Erro ao deletar pedido: " + e.getMessage(), e);
+        }
+    }
+
+
+    // CONTAR TOTAL DE PEDIDOS
+    public int contarTotal() {
+        String sql = "SELECT COUNT(*) FROM T_SGP_PEDIDO";
+       
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+           
+        } catch (SQLException e) {
+            throw new RuntimeException("❌ Erro ao contar pedidos: " + e.getMessage(), e);
+        }
+       
+        return 0;
+    }
+
+
+    // PRÓXIMO NÚMERO DE PEDIDO (para auto-incremento lógico)
+    public int proximoNumeroPedido() {
+        String sql = "SELECT COALESCE(MAX(nr_pedido), 0) + 1 FROM T_SGP_PEDIDO";
+       
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+           
+        } catch (SQLException e) {
+            throw new RuntimeException("❌ Erro ao buscar próximo número de pedido: " + e.getMessage(), e);
+        }
+       
+        return 1; // Primeiro pedido
+    }
+
+
+    // MÉTODO AUXILIAR: Converter ResultSet para Pedido
+    private Pedido mapResultSetToPedido(ResultSet rs) throws SQLException {
+        Pedido pedido = new Pedido();
+        pedido.setIdPedido(rs.getInt("id_pedido"));
+        pedido.setStPedido(rs.getString("st_pedido").charAt(0)); // String para char
+        pedido.setNrPedido(rs.getInt("nr_pedido"));
+        pedido.setIdCliente(rs.getInt("id_cliente"));
+        pedido.setIdEndereco(rs.getInt("id_endereco"));
+        return pedido;
     }
 }
