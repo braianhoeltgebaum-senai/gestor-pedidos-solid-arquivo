@@ -28,7 +28,8 @@ public class ClienteView extends JFrame {
         if (modal) {
             // Torna a janela modal (bloqueia a janela pai)
             setAlwaysOnTop(true);
-            setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+            // Não podemos usar setModalityType porque JFrame não tem esse método
+            // Para tornar modal, usaríamos JDialog, mas vamos manter JFrame
         }
     }
     
@@ -37,7 +38,6 @@ public class ClienteView extends JFrame {
         init();
         if (modal) {
             setAlwaysOnTop(true);
-            setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
         }
     }
     
@@ -54,13 +54,6 @@ public class ClienteView extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
-        
-        // Ícone da janela
-        try {
-            setIconImage(new ImageIcon(getClass().getResource("/icons/clientes.png")).getImage());
-        } catch (Exception e) {
-            // Ignora se não tiver ícone
-        }
     }
     
     private void criarComponentes() {
@@ -272,8 +265,8 @@ public class ClienteView extends JFrame {
                     "Aviso", JOptionPane.WARNING_MESSAGE);
             }
             
-            // Verificar se cadastro já existe
-            if (controller.cadastroExiste(cadastro)) {
+            // Verificar se cadastro já existe - TEMOS QUE IMPLEMENTAR
+            if (cadastroExiste(cadastro)) {
                 JOptionPane.showMessageDialog(this,
                     "❌ Cadastro " + cadastro + " já está em uso!\nUse outro número de cadastro.",
                     "Cadastro Duplicado",
@@ -302,6 +295,17 @@ public class ClienteView extends JFrame {
         }
     }
     
+    // Método para verificar se cadastro já existe (implementação local)
+    private boolean cadastroExiste(String cadastro) {
+        List<Cliente> clientes = controller.listarTodos();
+        for (Cliente c : clientes) {
+            if (c.getNrCadastro().equals(cadastro)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private void editarCliente() {
         int linhaSelecionada = tabelaClientes.getSelectedRow();
         if (linhaSelecionada == -1) {
@@ -322,7 +326,7 @@ public class ClienteView extends JFrame {
             String telefone = txtTelefone.getText().trim();
             
             // Verificar se houve alteração no cadastro
-            if (!cadastro.equals(cadastroAntigo) && controller.cadastroExiste(cadastro)) {
+            if (!cadastro.equals(cadastroAntigo) && cadastroExiste(cadastro)) {
                 JOptionPane.showMessageDialog(this,
                     "❌ Cadastro " + cadastro + " já está em uso!\nUse outro número de cadastro.",
                     "Cadastro Duplicado",

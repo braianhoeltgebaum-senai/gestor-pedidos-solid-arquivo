@@ -2,6 +2,8 @@ package com.tecdes.pedido.view;
 
 import com.tecdes.pedido.controller.ClienteController;
 import com.tecdes.pedido.controller.FuncionarioController;
+import com.tecdes.pedido.model.entity.Cliente;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -10,6 +12,8 @@ public class LoginView extends JFrame {
     private JTextField txtEmail;
     private JPasswordField txtSenha;
     private JComboBox<String> cbxTipoLogin;
+    private JButton btnLogin;
+    private JButton btnCadastrar;
     private ClienteController clienteController;
     private FuncionarioController funcionarioController;
     
@@ -105,13 +109,13 @@ public class LoginView extends JFrame {
         // Botões
         JPanel panelBotoes = new JPanel(new FlowLayout());
         
-        JButton btnLogin = new JButton("Entrar");
+        btnLogin = new JButton("Entrar");
         btnLogin.setBackground(new Color(70, 130, 180));
         btnLogin.setForeground(Color.WHITE);
         btnLogin.setFont(new Font("Arial", Font.BOLD, 14));
         btnLogin.setPreferredSize(new Dimension(120, 35));
         
-        JButton btnCadastrar = new JButton("Cadastrar Cliente");
+        btnCadastrar = new JButton("Cadastrar Cliente");
         btnCadastrar.setBackground(new Color(46, 125, 50));
         btnCadastrar.setForeground(Color.WHITE);
         btnCadastrar.setPreferredSize(new Dimension(150, 35));
@@ -134,15 +138,9 @@ public class LoginView extends JFrame {
     
     private void configurarEventos() {
         // Botão Login
-        JButton btnLogin = (JButton) ((JPanel) ((JPanel) getContentPane().getComponent(0))
-            .getComponent(6)).getComponent(0);
-            
         btnLogin.addActionListener(e -> fazerLogin());
         
         // Botão Cadastrar
-        JButton btnCadastrar = (JButton) ((JPanel) ((JPanel) getContentPane().getComponent(0))
-            .getComponent(6)).getComponent(1);
-            
         btnCadastrar.addActionListener(e -> abrirCadastroCliente());
         
         // Enter no campo de senha também faz login
@@ -164,19 +162,26 @@ public class LoginView extends JFrame {
         
         try {
             boolean sucesso = false;
+            String mensagem = "";
             
             switch (tipo) {
                 case "Cliente":
                     // Cliente usa email + número de cadastro (3 dígitos)
+                    System.out.println("🔐 Tentando login como CLIENTE: Email=" + usuario + ", Cadastro=" + senha);
                     sucesso = loginCliente(usuario, senha);
+                    mensagem = sucesso ? "Cliente autenticado" : "Falha na autenticação do cliente";
                     break;
                     
                 case "Funcionário":
                 case "Gerente":
-                    // Funcionário usa CPF + senha
+                    // Funcionário/Gerente usa CPF + senha
+                    System.out.println("🔐 Tentando login como FUNCIONÁRIO: CPF=" + usuario + ", Senha=" + senha);
                     sucesso = loginFuncionario(usuario, senha);
+                    mensagem = sucesso ? "Funcionário autenticado" : "Falha na autenticação do funcionário";
                     break;
             }
+            
+            System.out.println("✅ " + mensagem);
             
             if (sucesso) {
                 JOptionPane.showMessageDialog(this, 
@@ -191,12 +196,16 @@ public class LoginView extends JFrame {
                 this.dispose();
             } else {
                 JOptionPane.showMessageDialog(this, 
-                    "Login falhou! Verifique suas credenciais.", 
+                    "Login falhou! Verifique suas credenciais.\n" +
+                    "Para cliente: use email + número de cadastro (3 dígitos)\n" +
+                    "Para funcionário: use CPF + senha", 
                     "Erro no Login", 
                     JOptionPane.ERROR_MESSAGE);
             }
             
         } catch (Exception ex) {
+            System.err.println("❌ Erro no login: " + ex.getMessage());
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(this, 
                 "Erro no login: " + ex.getMessage(), 
                 "Erro", 
@@ -206,23 +215,37 @@ public class LoginView extends JFrame {
     
     private boolean loginCliente(String email, String cadastro) {
         try {
-            clienteController.login(email, cadastro);
-            return clienteController.isClienteLogado();
+            if (!clienteController.validarLogin(email, cadastro)) {
+                System.out.println("❌ Validação falhou: email ou cadastro inválidos");
+                return false;
+            }
+            
+            Cliente cliente = clienteController.login(email, cadastro);
+            if (cliente != null) {
+                System.out.println("✅ Cliente autenticado: " + cliente.getNmCliente());
+                return true;
+            } else {
+                System.out.println("❌ Cliente não encontrado ou credenciais inválidas");
+                return false;
+            }
         } catch (Exception e) {
+            System.err.println("❌ Erro no login do cliente: " + e.getMessage());
             return false;
         }
     }
     
     private boolean loginFuncionario(String cpf, String senha) {
         try {
-            return funcionarioController.login(cpf, senha);
+            boolean sucesso = funcionarioController.login(cpf, senha);
+            System.out.println("Login funcionário: " + (sucesso ? "✅ Sucesso" : "❌ Falha"));
+            return sucesso;
         } catch (Exception e) {
+            System.err.println("❌ Erro no login do funcionário: " + e.getMessage());
             return false;
         }
     }
     
     private void abrirCadastroCliente() {
-        // CORREÇÃO: Usar construtor correto do ClienteView
         SwingUtilities.invokeLater(() -> {
             ClienteView clienteView = new ClienteView();
             clienteView.setVisible(true);

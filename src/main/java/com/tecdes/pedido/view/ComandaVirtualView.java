@@ -3,7 +3,7 @@ package com.tecdes.pedido.view;
 import com.tecdes.pedido.model.entity.Pedido;
 import com.tecdes.pedido.controller.PedidoController;
 import com.tecdes.pedido.controller.ClienteController;
-import com.tecdes.pedido.controller.ProdutoController;
+import com.tecdes.pedido.model.entity.Cliente;
 import javax.swing.*;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
@@ -12,14 +12,12 @@ public class ComandaVirtualView extends JDialog {
     
     private PedidoController pedidoController;
     private ClienteController clienteController;
-    private ProdutoController produtoController;
     private Pedido pedido;
     
     public ComandaVirtualView(JFrame parent, Pedido pedido) {
         super(parent, "📋 Comanda Virtual", true);
         this.pedidoController = new PedidoController();
         this.clienteController = new ClienteController();
-        this.produtoController = new ProdutoController();
         this.pedido = pedido;
         
         configurarJanela();
@@ -97,21 +95,14 @@ public class ComandaVirtualView extends JDialog {
     
     private String obterNomeCliente(int idCliente) {
         try {
-            // Se tiver método para buscar cliente por ID
-            // return clienteController.buscarPorId(idCliente).getNmCliente();
+            
+            Cliente cliente = clienteController.buscarPorId(idCliente);
+            if (cliente != null) {
+                return cliente.getNmCliente();
+            }
             return "Cliente #" + idCliente;
         } catch (Exception e) {
             return "Cliente #" + idCliente;
-        }
-    }
-    
-    private String obterNomeProduto(int idProduto) {
-        try {
-            // Se tiver método para buscar produto por ID
-            // return produtoController.buscarPorId(idProduto).getNmProduto();
-            return "Produto #" + idProduto;
-        } catch (Exception e) {
-            return "Produto #" + idProduto;
         }
     }
     
@@ -150,7 +141,7 @@ public class ComandaVirtualView extends JDialog {
             // Calcular total do pedido
             double total = pedidoController.calcularTotal(pedido.getIdPedido());
             
-            // Como não temos método para listar itens, vamos mostrar o total
+            // Exibir total
             JPanel itemPanel = new JPanel(new GridLayout(1, 4));
             itemPanel.setBackground(new Color(248, 248, 248));
             
@@ -177,13 +168,8 @@ public class ComandaVirtualView extends JDialog {
             panel.add(itemPanel);
             panel.add(Box.createRigidArea(new Dimension(0, 20)));
             
-            // Se você tiver acesso aos itens do pedido, adicione aqui:
-            /*
-            List<ItemPedido> itens = // método para obter itens
-            for (ItemPedido item : itens) {
-                // código para mostrar cada item
-            }
-            */
+           
+            adicionarMensagemItens(panel);
             
         } catch (Exception e) {
             JLabel lblErro = new JLabel("Erro ao calcular total: " + e.getMessage());
@@ -193,6 +179,15 @@ public class ComandaVirtualView extends JDialog {
         }
         
         return panel;
+    }
+    
+    private void adicionarMensagemItens(JPanel panel) {
+        JLabel lblInfo = new JLabel("ℹ️ Detalhes dos itens disponíveis no sistema");
+        lblInfo.setFont(new Font("Arial", Font.ITALIC, 11));
+        lblInfo.setForeground(Color.GRAY);
+        lblInfo.setHorizontalAlignment(SwingConstants.CENTER);
+        lblInfo.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panel.add(lblInfo);
     }
     
     private JPanel criarRodape() {
