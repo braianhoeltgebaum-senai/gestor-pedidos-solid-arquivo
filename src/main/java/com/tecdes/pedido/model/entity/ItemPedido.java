@@ -2,150 +2,69 @@ package com.tecdes.pedido.model.entity;
 
 
 public class ItemPedido {
+    private int idItem;        // id_item INT
+    private int qtProduto;     // qt_produto INT
+    private int idPedido;      // id_pedido INT (FK)
+    private int idProduto;     // id_produto INT (FK)
 
 
-    private Long idItem;
-    private Produto produto;
-    private int quantidade;
-    private double precoUnitario;
-    private String observacoes;
-    private Long idPedido;
+    public ItemPedido() {}
 
 
-    public Long getIdPedido() {
-        return idPedido;
-    }
-
-
-    public void setIdPedido(Long idPedido) {
+    public ItemPedido(int qtProduto, int idPedido, int idProduto) {
+        this.qtProduto = qtProduto;
         this.idPedido = idPedido;
+        this.idProduto = idProduto;
     }
 
 
-    public Long getIdItem() {
+    // Getters e Setters
+    public int getIdItem() {
         return idItem;
     }
 
 
-    public void setIdItem(Long idItem) {
+    public void setIdItem(int idItem) {
         this.idItem = idItem;
     }
 
 
-    public Produto getProduto() {
-        return produto;
+    public int getQtProduto() {
+        return qtProduto;
     }
 
 
-    public void setProduto(Produto produto) {
-        this.produto = produto;
+    public void setQtProduto(int qtProduto) {
+        if (qtProduto <= 0) {
+            throw new IllegalArgumentException("Quantidade deve ser maior que zero");
+        }
+        this.qtProduto = qtProduto;
     }
 
 
-    public int getQuantidade() {
-        return quantidade;
+    public int getIdPedido() {
+        return idPedido;
     }
 
 
-    public void setQuantidade(int quantidade) {
-        this.quantidade = quantidade;
+    public void setIdPedido(int idPedido) {
+        this.idPedido = idPedido;
     }
 
 
-    public double getPrecoUnitario() {
-        return precoUnitario;
+    public int getIdProduto() {
+        return idProduto;
     }
 
 
-    public void setPrecoUnitario(double precoUnitario) {
-        this.precoUnitario = precoUnitario;
+    public void setIdProduto(int idProduto) {
+        this.idProduto = idProduto;
     }
 
 
-    public String getObservacoes() {
-        return observacoes;
-    }
-
-
-    public void setObservacoes(String observacoes) {
-        this.observacoes = observacoes;
-    }
-
-
-    public double calcularTotal() {
-        return this.precoUnitario * this.quantidade;
+    @Override
+    public String toString() {
+        return "Item #" + idItem + " - Qtd: " + qtProduto +
+               " (Pedido: " + idPedido + ", Produto: " + idProduto + ")";
     }
 }
-// package com.tecdes.pedido.model.entity;
-
-
-// public class ItemPedido {
-
-
-//     private int idItem;
-//     private Produto produto;
-//     private int quantidade;
-//     private double precoUnitario;
-//     private String observacoes;
-
-
-//     public ItemPedido() {}
-
-
-//     public ItemPedido(int idItem, Produto produto, int quantidade, double precoUnitario, String observacoes) {
-//         this.idItem = idItem;
-//         this.produto = produto;
-//         this.quantidade = quantidade;
-//         this.precoUnitario = precoUnitario;
-//         this.observacoes = observacoes;
-//     }
-
-
-//     public int getIdItem(){
-//         return idItem; }
-
-
-//     public void setIdItem(int idItem){
-//         this.idItem = idItem; }
-
-
-//     public Produto getProduto(){
-//         return produto; }
-
-
-//     public void setProduto(Produto produto){
-//         this.produto = produto; }
-
-
-//     public int getQuantidade(){
-//         return quantidade; }
-
-
-//     public void setQuantidade(int quantidade){
-//         this.quantidade = quantidade; }
-
-
-//     public double getPrecoUnitario(){
-//         return precoUnitario; }
-
-
-//     public void setPrecoUnitario(double precoUnitario){
-//         this.precoUnitario = precoUnitario; }
-
-
-//     public String getObservacoes(){
-//         return observacoes; }
-
-
-//     public void setObservacoes(String observacoes){
-//         this.observacoes = observacoes; }
-
-
-//     public double getSubtotal() {
-//         return quantidade * precoUnitario;
-//     }
-//     //metodo para calcular o total do item
-   
-// }
-
-
