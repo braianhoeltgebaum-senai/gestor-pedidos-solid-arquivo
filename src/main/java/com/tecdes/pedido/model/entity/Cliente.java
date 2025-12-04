@@ -1,81 +1,95 @@
 package com.tecdes.pedido.model.entity;
 
-
 public class Cliente {
+    private int idCliente;           // INT no banco
+    private String nmCliente;        // nm_cliente no banco
+    private String nrCadastro;       // nr_cadastro no banco
+    private String dsEmail;          // ds_email no banco  
+    private String nrTelefone;       // nr_telefone no banco
 
+    public Cliente() {}
 
-    private Long idCliente;
-    private String nome;
-    private String fone;
-    private String email;
-
-
-    public Cliente() {
-   
+    public Cliente(String nmCliente, String nrCadastro, String dsEmail, String nrTelefone) {
+        this.nmCliente = nmCliente;
+        this.nrCadastro = nrCadastro;
+        this.dsEmail = dsEmail;
+        this.nrTelefone = nrTelefone;
     }
 
-
-    public Cliente(String nome, String fone, String email) {
-        this.nome = nome;
-        this.fone = fone;
-        this.email = email;
-    }
-
-
-
-
-
-
-    public Long getIdCliente() {
+    // Getters e Setters CORRETOS
+    public int getIdCliente() {
         return idCliente;
     }
 
-
-    public void setIdCliente(Long idCliente) {
+    public void setIdCliente(int idCliente) {
         this.idCliente = idCliente;
     }
 
-
-    public String getNome() {
-        return nome;
+    public String getNmCliente() {
+        return nmCliente;
     }
 
-
-    public void setNome(String nome) {
-        if (nome == null || nome.trim().isEmpty()) {
-            throw new IllegalArgumentException("Nome inválido");
+    public void setNmCliente(String nmCliente) {
+        if (nmCliente == null || nmCliente.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nome do cliente é obrigatório");
         }
-        this.nome = nome;
-    }
-
-
-    public String getFone() {
-        return fone;
-    }
-
-
-    public void setFone(String fone) {
-        if (fone == null) {
-            this.fone = "";
-        } else {
-            this.fone = fone;
+        if (nmCliente.length() > 60) {
+            throw new IllegalArgumentException("Nome muito longo (máx 60 caracteres)");
         }
+        this.nmCliente = nmCliente;
     }
 
-
-    public String getEmail()
-    {   return email;    
-    }
-    public void setEmail(String email)
-    {
-        this.email = email;
+    public String getNrCadastro() {
+        return nrCadastro;
     }
 
+    public void setNrCadastro(String nrCadastro) {
+        if (nrCadastro == null || nrCadastro.trim().isEmpty()) {
+            throw new IllegalArgumentException("Número de cadastro é obrigatório");
+        }
+        if (nrCadastro.length() != 3) {
+            throw new IllegalArgumentException("Número de cadastro deve ter 3 caracteres");
+        }
+        this.nrCadastro = nrCadastro;
+    }
 
+    public String getDsEmail() {
+        return dsEmail;
+    }
 
+    public void setDsEmail(String dsEmail) {
+        if (dsEmail == null || dsEmail.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email é obrigatório");
+        }
+        if (!dsEmail.contains("@") || !dsEmail.contains(".")) {
+            throw new IllegalArgumentException("Email inválido");
+        }
+        if (dsEmail.length() > 150) {
+            throw new IllegalArgumentException("Email muito longo (máx 150 caracteres)");
+        }
+        this.dsEmail = dsEmail;
+    }
+
+    public String getNrTelefone() {
+        return nrTelefone;
+    }
+
+    public void setNrTelefone(String nrTelefone) {
+        if (nrTelefone == null || nrTelefone.trim().isEmpty()) {
+            throw new IllegalArgumentException("Telefone é obrigatório");
+        }
+        if (nrTelefone.length() > 15) {
+            throw new IllegalArgumentException("Telefone muito longo (máx 15 caracteres)");
+        }
+        this.nrTelefone = nrTelefone;
+    }
 
     @Override
     public String toString() {
-        return nome + " (" + fone + ")";
+        return "Cliente [id=" + idCliente + 
+               ", nome=" + nmCliente + 
+               ", cadastro=" + nrCadastro + 
+               ", email=" + dsEmail + 
+               ", telefone=" + nrTelefone + "]";
     }
-}
+}//alterado
