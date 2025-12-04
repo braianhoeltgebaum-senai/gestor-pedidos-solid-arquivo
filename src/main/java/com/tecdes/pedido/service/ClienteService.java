@@ -7,16 +7,14 @@ import java.util.List;
 public class ClienteService {
 
     private final ClienteRepository clienteRepository;
-    private Cliente clienteAutenticado; // ✅ Armazena cliente logado
+    private Cliente clienteAutenticado;
 
     public ClienteService(ClienteRepository clienteRepository) {
         this.clienteRepository = clienteRepository;
-        this.clienteAutenticado = null; // Inicialmente ninguém logado
+        this.clienteAutenticado = null;
     }
 
-    // ✅ MÉTODOS DE AUTENTICAÇÃO ADICIONADOS:
-    
-    // Autentica cliente usando email e número de cadastro - CORRIGIDO
+    // ✅ MÉTODO DE AUTENTICAÇÃO CORRETO
     public Cliente autenticarCliente(String email, String numeroCadastro) {
         System.out.println("🔐 ClienteService.autenticarCliente()");
         System.out.println("📧 Email recebido: " + email);
@@ -31,8 +29,8 @@ public class ClienteService {
             throw new IllegalArgumentException("Número de cadastro é obrigatório");
         }
         
-        // Busca cliente pelo email - CORREÇÃO: usar buscarPorEmail
-        Cliente cliente = clienteRepository.buscarPorEmail(email);
+        // CORREÇÃO: usar findByEmail (não buscarPorEmail)
+        Cliente cliente = clienteRepository.findByEmail(email);
         
         System.out.println("🔍 Cliente encontrado: " + (cliente != null ? "Sim" : "Não"));
         
@@ -80,9 +78,8 @@ public class ClienteService {
         return clienteAutenticado;
     }
     
-    // MÉTODOS EXISTENTES (com logs adicionados):
+    // MÉTODOS EXISTENTES:
 
-    // CORRIGIDO: Usa campos corretos
     public Cliente cadastrarCliente(Cliente cliente) {
         System.out.println("📝 Cadastrando novo cliente: " + cliente.getNmCliente());
         
@@ -93,8 +90,8 @@ public class ClienteService {
             throw new IllegalArgumentException("Número de cadastro deve ter 3 dígitos.");
         }
         
-        // Verifica se email já existe
-        Cliente existente = clienteRepository.buscarPorEmail(cliente.getDsEmail()); // CORREÇÃO: buscarPorEmail
+        // CORREÇÃO: usar findByEmail
+        Cliente existente = clienteRepository.findByEmail(cliente.getDsEmail());
         if (existente != null) {
             throw new IllegalArgumentException("Email já cadastrado: " + cliente.getDsEmail());
         }
@@ -104,15 +101,14 @@ public class ClienteService {
         return cliente;
     }
     
-    // CORRIGIDO: 4 parâmetros alinhados com banco
     public Cliente salvarCliente(String nome, String cadastro, String email, String telefone) {
         Cliente cliente = new Cliente(nome, cadastro, email, telefone);
         return cadastrarCliente(cliente);
     }
 
-    // CORRIGIDO: Mudou de Long para int
     public Cliente buscarClientePorId(int id) {
-        return clienteRepository.buscarPorId(id);
+        // CORREÇÃO: usar findById (não buscarPorId)
+        return clienteRepository.findById(id);
     }
     
     // Alias para compatibilidade
@@ -121,14 +117,14 @@ public class ClienteService {
     }
 
     public List<Cliente> buscarTodosClientes() {
-        return clienteRepository.buscarTodos();
+        // CORREÇÃO: usar findAll
+        return clienteRepository.findAll();
     }
     
     public List<Cliente> buscarTodos() {
         return buscarTodosClientes();
     }
 
-    // CORRIGIDO: Mudou de Long para int
     public Cliente atualizarCliente(int id, Cliente dadosNovos) {
         System.out.println("✏️ Atualizando cliente ID: " + id);
         
@@ -143,18 +139,18 @@ public class ClienteService {
         
         // Verifica se email mudou e se já pertence a outro
         if (!clienteExistente.getDsEmail().equals(dadosNovos.getDsEmail())) {
-            Cliente clienteComEmail = clienteRepository.buscarPorEmail(dadosNovos.getDsEmail()); // CORREÇÃO: buscarPorEmail
+            // CORREÇÃO: usar findByEmail
+            Cliente clienteComEmail = clienteRepository.findByEmail(dadosNovos.getDsEmail());
             if (clienteComEmail != null && clienteComEmail.getIdCliente() != id) {
                 throw new IllegalArgumentException("Email já cadastrado para outro cliente");
             }
         }
         
-        clienteRepository.atualizar(clienteExistente);
+        clienteRepository.update(clienteExistente);
         System.out.println("✅ Cliente atualizado: " + clienteExistente.getNmCliente());
         return clienteExistente;
     }
     
-    // CORRIGIDO: Mudou de Long para int e 5 parâmetros
     public Cliente atualizarCliente(int id, String nome, String cadastro, String email, String telefone) {
         Cliente dadosNovos = new Cliente();
         dadosNovos.setNmCliente(nome);
@@ -164,7 +160,6 @@ public class ClienteService {
         return atualizarCliente(id, dadosNovos);
     }
 
-    // CORRIGIDO: Mudou de Long para int
     public void excluirCliente(int id) {
         System.out.println("🗑️ Excluindo cliente ID: " + id);
         
@@ -173,18 +168,20 @@ public class ClienteService {
             throw new IllegalArgumentException("Não é possível excluir o próprio cliente enquanto autenticado");
         }
         
-        if (!clienteRepository.existePorId(id)) {
+        // CORREÇÃO: usar existsById
+        if (!clienteRepository.existsById(id)) {
             throw new RuntimeException("Cliente ID " + id + " não pode ser excluído, pois não existe.");
         }
         
-        clienteRepository.excluir(id);
+        clienteRepository.delete(id);
         System.out.println("✅ Cliente excluído ID: " + id);
     }
     
     // Buscar por email
     public Cliente buscarClientePorEmail(String email) {
         System.out.println("🔍 Buscando cliente por email: " + email);
-        Cliente cliente = clienteRepository.buscarPorEmail(email); // CORREÇÃO: buscarPorEmail
+        // CORREÇÃO: usar findByEmail
+        Cliente cliente = clienteRepository.findByEmail(email);
         System.out.println("🔍 Cliente encontrado: " + (cliente != null ? cliente.getNmCliente() : "Não encontrado"));
         return cliente;
     }

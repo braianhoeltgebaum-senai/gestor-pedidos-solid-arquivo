@@ -214,25 +214,46 @@ public class LoginView extends JFrame {
     }
     
     private boolean loginCliente(String email, String cadastro) {
-        try {
-            if (!clienteController.validarLogin(email, cadastro)) {
-                System.out.println("❌ Validação falhou: email ou cadastro inválidos");
-                return false;
-            }
-            
-            Cliente cliente = clienteController.login(email, cadastro);
-            if (cliente != null) {
-                System.out.println("✅ Cliente autenticado: " + cliente.getNmCliente());
-                return true;
-            } else {
-                System.out.println("❌ Cliente não encontrado ou credenciais inválidas");
-                return false;
-            }
-        } catch (Exception e) {
-            System.err.println("❌ Erro no login do cliente: " + e.getMessage());
+    try {
+        System.out.println("\n=== TENTATIVA DE LOGIN CLIENTE ===");
+        System.out.println("📧 Email: " + email);
+        System.out.println("🔢 Cadastro: " + cadastro);
+        
+        // Primeiro valida os dados
+        if (!clienteController.validarLogin(email, cadastro)) {
+            System.out.println("❌ Validação inicial falhou");
             return false;
         }
+        
+        System.out.println("✅ Validação inicial OK");
+        
+        // Chama o login (retorna boolean)
+        boolean sucesso = clienteController.login(email, cadastro);
+        
+        if (sucesso) {
+            // Obtém o cliente autenticado
+            Cliente cliente = clienteController.getClienteLogado();
+            if (cliente != null) {
+                System.out.println("✅ Cliente autenticado com sucesso!");
+                System.out.println("👤 Nome: " + cliente.getNmCliente());
+                System.out.println("📧 Email: " + cliente.getDsEmail());
+                System.out.println("🔢 Cadastro: " + cliente.getNrCadastro());
+                return true;
+            } else {
+                System.out.println("⚠️ Login retornou true mas cliente é null");
+                return false;
+            }
+        } else {
+            System.out.println("❌ Login falhou - credenciais incorretas");
+            return false;
+        }
+        
+    } catch (Exception e) {
+        System.err.println("💥 Erro no login do cliente: " + e.getMessage());
+        e.printStackTrace();
+        return false;
     }
+}
     
     private boolean loginFuncionario(String cpf, String senha) {
         try {
