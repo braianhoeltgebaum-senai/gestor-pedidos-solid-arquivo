@@ -33,10 +33,10 @@ public class MainMenuView extends JFrame {
         JMenu menuCadastros = new JMenu("📁 Cadastros");
         
         JMenuItem itemClientes = new JMenuItem("👥 Clientes");
-        itemClientes.addActionListener(e -> mostrarCard("clientes"));
+        itemClientes.addActionListener(e -> abrirClienteView());
         
         JMenuItem itemProdutos = new JMenuItem("🍔 Produtos");
-        itemProdutos.addActionListener(e -> mostrarCard("produtos"));
+        itemProdutos.addActionListener(e -> abrirProdutoView());
         
         menuCadastros.add(itemClientes);
         menuCadastros.add(itemProdutos);
@@ -45,26 +45,40 @@ public class MainMenuView extends JFrame {
         JMenu menuPedidos = new JMenu("📋 Pedidos");
         
         JMenuItem itemNovoPedido = new JMenuItem("➕ Novo Pedido");
-        itemNovoPedido.addActionListener(e -> mostrarCard("novoPedido"));
+        itemNovoPedido.addActionListener(e -> abrirPedidoView());
         
         JMenuItem itemVerPedidos = new JMenuItem("👁️ Ver Pedidos");
-        itemVerPedidos.addActionListener(e -> mostrarCard("pedidos"));
+        itemVerPedidos.addActionListener(e -> abrirListaPedidosView());
         
         menuPedidos.add(itemNovoPedido);
         menuPedidos.add(itemVerPedidos);
         
+        // Menu Pagamentos
+        JMenu menuPagamentos = new JMenu("💰 Pagamentos");
+        JMenuItem itemPagamentos = new JMenuItem("💳 Gerenciar Pagamentos");
+        itemPagamentos.addActionListener(e -> abrirPagamentoView());
+        menuPagamentos.add(itemPagamentos);
+        
         // Menu Relatórios (apenas gerentes)
-        if (tipoUsuario.equals("Gerente")) {
+        if (tipoUsuario.equals("Gerente") || tipoUsuario.equals("Funcionário")) {
             JMenu menuRelatorios = new JMenu("📊 Relatórios");
             
-            JMenuItem itemRelVendas = new JMenuItem("💰 Vendas Diárias");
-            itemRelVendas.addActionListener(e -> gerarRelatorioVendas());
+            JMenuItem itemRelVendas = new JMenuItem("💰 Relatório de Vendas");
+            itemRelVendas.addActionListener(e -> abrirRelatorioView());
             
-            JMenuItem itemRelProdutos = new JMenuItem("🍟 Produtos Mais Vendidos");
+            JMenuItem itemRelClientes = new JMenuItem("👥 Relatório de Clientes");
+            itemRelClientes.addActionListener(e -> gerarRelatorioClientes());
+            
+            JMenuItem itemRelProdutos = new JMenuItem("🍟 Relatório de Produtos");
             itemRelProdutos.addActionListener(e -> gerarRelatorioProdutos());
             
+            JMenuItem itemRelCompleto = new JMenuItem("📈 Relatório Completo");
+            itemRelCompleto.addActionListener(e -> gerarRelatorioCompleto());
+            
             menuRelatorios.add(itemRelVendas);
+            menuRelatorios.add(itemRelClientes);
             menuRelatorios.add(itemRelProdutos);
+            menuRelatorios.add(itemRelCompleto);
             menuBar.add(menuRelatorios);
         }
         
@@ -72,11 +86,17 @@ public class MainMenuView extends JFrame {
         JMenu menuAjuda = new JMenu("❓ Ajuda");
         JMenuItem itemSobre = new JMenuItem("ℹ️ Sobre o Sistema");
         itemSobre.addActionListener(e -> mostrarSobre());
+        
+        JMenuItem itemAjuda = new JMenuItem("📖 Manual do Usuário");
+        itemAjuda.addActionListener(e -> mostrarAjuda());
+        
         menuAjuda.add(itemSobre);
+        menuAjuda.add(itemAjuda);
         
         // Adicionar menus à barra
         menuBar.add(menuCadastros);
         menuBar.add(menuPedidos);
+        menuBar.add(menuPagamentos);
         menuBar.add(menuAjuda);
         
         setJMenuBar(menuBar);
@@ -103,12 +123,6 @@ public class MainMenuView extends JFrame {
         JPanel dashboardPanel = criarDashboardPanel();
         cardPanel.add(dashboardPanel, "dashboard");
         
-        // Telas específicas (você vai criar depois)
-        cardPanel.add(new JLabel("Tela de Clientes - Em construção"), "clientes");
-        cardPanel.add(new JLabel("Tela de Produtos - Em construção"), "produtos");
-        cardPanel.add(new JLabel("Tela de Pedidos - Em construção"), "pedidos");
-        cardPanel.add(new JLabel("Novo Pedido - Em construção"), "novoPedido");
-        
         add(cardPanel, BorderLayout.CENTER);
         
         // Mostrar dashboard inicial
@@ -117,25 +131,26 @@ public class MainMenuView extends JFrame {
     
     private JPanel criarDashboardPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
+        panel.setBackground(new Color(240, 240, 240));
         
         // Cabeçalho
-        JLabel lblTitulo = new JLabel("🏠 Dashboard - Bem-vindo!");
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
+        JLabel lblTitulo = new JLabel("🏠 Dashboard - Bem-vindo, " + tipoUsuario + "!");
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 28));
         lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        lblTitulo.setForeground(new Color(70, 130, 180));
         panel.add(lblTitulo, BorderLayout.NORTH);
         
         // Painel de cards
         JPanel cardsDashboard = new JPanel(new GridLayout(2, 3, 20, 20));
         cardsDashboard.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        cardsDashboard.setBackground(Color.WHITE);
+        cardsDashboard.setBackground(new Color(240, 240, 240));
         
         // Card 1: Clientes
         JPanel cardClientes = criarCard("👥 Clientes", "Gerenciar clientes", Color.decode("#4CAF50"));
         cardClientes.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                mostrarCard("clientes");
+                abrirClienteView();
             }
         });
         
@@ -143,7 +158,7 @@ public class MainMenuView extends JFrame {
         JPanel cardProdutos = criarCard("🍔 Produtos", "Gerenciar cardápio", Color.decode("#2196F3"));
         cardProdutos.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                mostrarCard("produtos");
+                abrirProdutoView();
             }
         });
         
@@ -151,7 +166,7 @@ public class MainMenuView extends JFrame {
         JPanel cardPedidos = criarCard("📋 Pedidos", "Ver pedidos", Color.decode("#FF9800"));
         cardPedidos.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                mostrarCard("pedidos");
+                abrirListaPedidosView();
             }
         });
         
@@ -159,7 +174,7 @@ public class MainMenuView extends JFrame {
         JPanel cardNovoPedido = criarCard("➕ Novo Pedido", "Criar novo pedido", Color.decode("#E91E63"));
         cardNovoPedido.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                mostrarCard("novoPedido");
+                abrirPedidoView();
             }
         });
         
@@ -167,15 +182,15 @@ public class MainMenuView extends JFrame {
         JPanel cardPagamentos = criarCard("💰 Pagamentos", "Registrar pagamentos", Color.decode("#9C27B0"));
         cardPagamentos.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                JOptionPane.showMessageDialog(this, "Funcionalidade em desenvolvimento");
+                abrirPagamentoView();
             }
         });
         
-        // Card 6: Avaliações
-        JPanel cardAvaliacoes = criarCard("⭐ Avaliações", "Ver avaliações", Color.decode("#FF5722"));
-        cardAvaliacoes.addMouseListener(new java.awt.event.MouseAdapter() {
+        // Card 6: Relatórios
+        JPanel cardRelatorios = criarCard("📊 Relatórios", "Gerar relatórios", Color.decode("#FF5722"));
+        cardRelatorios.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                JOptionPane.showMessageDialog(this, "Funcionalidade em desenvolvimento");
+                abrirRelatorioView();
             }
         });
         
@@ -184,9 +199,20 @@ public class MainMenuView extends JFrame {
         cardsDashboard.add(cardPedidos);
         cardsDashboard.add(cardNovoPedido);
         cardsDashboard.add(cardPagamentos);
-        cardsDashboard.add(cardAvaliacoes);
+        cardsDashboard.add(cardRelatorios);
         
         panel.add(cardsDashboard, BorderLayout.CENTER);
+        
+        // Rodapé do dashboard
+        JPanel panelRodape = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        panelRodape.setBackground(new Color(220, 220, 220));
+        panelRodape.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        
+        JLabel lblInfo = new JLabel("🍔 Sistema de Gestão de Lanchonete - TecDes © 2025");
+        lblInfo.setFont(new Font("Arial", Font.ITALIC, 12));
+        panelRodape.add(lblInfo);
+        
+        panel.add(panelRodape, BorderLayout.SOUTH);
         
         return panel;
     }
@@ -195,55 +221,201 @@ public class MainMenuView extends JFrame {
         JPanel card = new JPanel(new BorderLayout());
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(cor, 2),
-            BorderFactory.createEmptyBorder(20, 20, 20, 20)
+            BorderFactory.createLineBorder(cor.darker(), 1),
+            BorderFactory.createEmptyBorder(25, 25, 25, 25)
         ));
         card.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
+        // Efeito hover
+        card.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                card.setBackground(new Color(250, 250, 250));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                card.setBackground(Color.WHITE);
+            }
+        });
+        
         JLabel lblTitulo = new JLabel(titulo);
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 18));
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 20));
         lblTitulo.setForeground(cor);
+        lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
         
         JLabel lblDesc = new JLabel(descricao);
-        lblDesc.setFont(new Font("Arial", Font.PLAIN, 12));
+        lblDesc.setFont(new Font("Arial", Font.PLAIN, 14));
         lblDesc.setForeground(Color.DARK_GRAY);
+        lblDesc.setHorizontalAlignment(SwingConstants.CENTER);
         
-        card.add(lblTitulo, BorderLayout.NORTH);
-        card.add(lblDesc, BorderLayout.CENTER);
+        card.add(lblTitulo, BorderLayout.CENTER);
+        card.add(lblDesc, BorderLayout.SOUTH);
         
         return card;
     }
     
-    private void mostrarCard(String cardName) {
-        cardLayout.show(cardPanel, cardName);
+   
+    
+    // Métodos para abrir as Views específicas
+    private void abrirClienteView() {
+        SwingUtilities.invokeLater(() -> {
+            ClienteView clienteView = new ClienteView();
+            clienteView.setVisible(true);
+        });
     }
     
-    private void gerarRelatorioVendas() {
-        // Implementar usando PedidoController
-        JOptionPane.showMessageDialog(this, "Gerando relatório de vendas...");
+    private void abrirProdutoView() {
+        SwingUtilities.invokeLater(() -> {
+            ProdutoView produtoView = new ProdutoView();
+            produtoView.setVisible(true);
+        });
+    }
+    
+    private void abrirPedidoView() {
+        SwingUtilities.invokeLater(() -> {
+            PedidoView pedidoView = new PedidoView();
+            pedidoView.setVisible(true);
+        });
+    }
+    
+    private void abrirListaPedidosView() {
+        SwingUtilities.invokeLater(() -> {
+            ListaPedidosView listaView = new ListaPedidosView();
+            listaView.setVisible(true);
+        });
+    }
+    
+    private void abrirPagamentoView() {
+        SwingUtilities.invokeLater(() -> {
+            PagamentoView pagamentoView = new PagamentoView();
+            pagamentoView.setVisible(true);
+        });
+    }
+    
+    private void abrirRelatorioView() {
+        SwingUtilities.invokeLater(() -> {
+            RelatorioView relatorioView = new RelatorioView();
+            relatorioView.setVisible(true);
+        });
+    }
+    
+    // Métodos para gerar relatórios específicos
+    private void gerarRelatorioClientes() {
+        RelatorioView relatorioView = new RelatorioView();
+        relatorioView.setVisible(true);
+        // Aqui você poderia adicionar lógica para gerar relatório específico
+        JOptionPane.showMessageDialog(this, 
+            "Relatório de Clientes disponível na tela de relatórios!",
+            "Abrindo Relatórios",
+            JOptionPane.INFORMATION_MESSAGE);
     }
     
     private void gerarRelatorioProdutos() {
-        // Implementar usando ProdutoController + ItemPedidoController
-        JOptionPane.showMessageDialog(this, "Gerando relatório de produtos...");
+        RelatorioView relatorioView = new RelatorioView();
+        relatorioView.setVisible(true);
+        // Aqui você poderia adicionar lógica para gerar relatório específico
+        JOptionPane.showMessageDialog(this, 
+            "Relatório de Produtos disponível na tela de relatórios!",
+            "Abrindo Relatórios",
+            JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void gerarRelatorioCompleto() {
+        RelatorioView relatorioView = new RelatorioView();
+        relatorioView.setVisible(true);
+        // Aqui você poderia adicionar lógica para gerar relatório específico
+        JOptionPane.showMessageDialog(this, 
+            "Relatório Completo disponível na tela de relatórios!",
+            "Abrindo Relatórios",
+            JOptionPane.INFORMATION_MESSAGE);
     }
     
     private void mostrarSobre() {
         String sobre = """
-            🍔 Sistema de Gestão de Lanchonete
+            🍔 Sistema de Gestão de Lanchonete - TecDes
+            
             Versão: 1.0
             Desenvolvido por: [Seu Nome]
             Curso: Técnico em Desenvolvimento de Sistemas
             Professor: Gerson Trindade
             
-            Funcionalidades:
-            • Cadastro de clientes e produtos
-            • Gestão de pedidos
-            • Controle de pagamentos
-            • Sistema de avaliações
-            • Relatórios em .txt
+            📋 Funcionalidades:
+            • 👥 Cadastro de clientes
+            • 🍔 Gerenciamento de produtos
+            • 📋 Criação de pedidos
+            • 💰 Controle de pagamentos
+            • ⭐ Sistema de avaliações
+            • 📊 Relatórios em .txt
+            • 🔐 Sistema de login multi-usuário
+            
+            🚀 Tecnologias:
+            • Java 17+
+            • Swing (Interface Gráfica)
+            • MySQL (Banco de Dados)
+            • Padrão MVC (Model-View-Controller)
+            
+            © 2025 - Todos os direitos reservados
             """;
             
-        JOptionPane.showMessageDialog(this, sobre, "Sobre o Sistema", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, 
+            sobre, 
+            "Sobre o Sistema", 
+            JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void mostrarAjuda() {
+        String ajuda = """
+            📖 MANUAL DO USUÁRIO - SISTEMA DE LANCHONETE
+            
+            1. 👥 CADASTRO DE CLIENTES
+               • Acesse: Cadastros → Clientes
+               • Preencha: Nome, Cadastro (3 dígitos), Email, Telefone
+               • Use: Salvar, Editar, Excluir
+            
+            2. 🍔 GERENCIAMENTO DE PRODUTOS
+               • Acesse: Cadastros → Produtos
+               • Preencha: Nome, Tipo, Descrição, Valor
+               • Tipos: L (Lanche), B (Bebida), C (Complemento)
+            
+            3. 📋 CRIAR PEDIDO
+               • Acesse: Pedidos → Novo Pedido
+               • Selecione: Cliente, Produtos, Quantidades
+               • Finalize: Clique em Finalizar Pedido
+            
+            4. 💰 REGISTRAR PAGAMENTO
+               • Acesse: Pagamentos → Gerenciar Pagamentos
+               • Selecione: Pedido, Forma de Pagamento
+               • Informe: Valor Pago
+               • Sistema calcula troco automaticamente
+            
+            5. 📊 GERAR RELATÓRIOS
+               • Acesse: Relatórios
+               • Escolha o tipo de relatório
+               • Relatórios são salvos em .txt
+            
+            🔐 PERMISSÕES:
+            • Gerente: Todas as funcionalidades
+            • Funcionário: Criar pedidos, registrar pagamentos
+            • Cliente: Ver pedidos, fazer avaliações
+            
+            ⚠️ DICAS:
+            • Sempre confirme os dados antes de salvar
+            • Verifique o status dos pedidos
+            • Faça backup dos relatórios importantes
+            • Em caso de dúvidas, consulte a equipe de suporte
+            """;
+            
+        // Criar uma caixa de diálogo personalizada com scroll
+        JTextArea textArea = new JTextArea(ajuda);
+        textArea.setEditable(false);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(600, 400));
+        
+        JOptionPane.showMessageDialog(this, 
+            scrollPane, 
+            "Manual do Usuário", 
+            JOptionPane.INFORMATION_MESSAGE);
     }
 }

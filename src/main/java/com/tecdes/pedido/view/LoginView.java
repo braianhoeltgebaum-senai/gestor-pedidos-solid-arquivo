@@ -189,6 +189,11 @@ public class LoginView extends JFrame {
                 
                 // Fechar tela de login
                 this.dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "Login falhou! Verifique suas credenciais.", 
+                    "Erro no Login", 
+                    JOptionPane.ERROR_MESSAGE);
             }
             
         } catch (Exception ex) {
@@ -217,11 +222,17 @@ public class LoginView extends JFrame {
     }
     
     private void abrirCadastroCliente() {
-        new ClienteView(this, true).setVisible(true);
+        // CORREÇÃO: Usar construtor correto do ClienteView
+        SwingUtilities.invokeLater(() -> {
+            ClienteView clienteView = new ClienteView();
+            clienteView.setVisible(true);
+        });
     }
     
     private void abrirMenuPrincipal(String tipoUsuario) {
-        MainMenuView menuView = new MainMenuView(tipoUsuario);
-        menuView.setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+            MainMenuView menuView = new MainMenuView(tipoUsuario);
+            menuView.setVisible(true);
+        });
     }
 }

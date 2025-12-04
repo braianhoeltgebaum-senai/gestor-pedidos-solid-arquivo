@@ -1,336 +1,428 @@
 package com.tecdes.pedido.view;
 
-
-import com.tecdes.pedido.service.ClienteService;
+import com.tecdes.pedido.controller.ClienteController;
 import com.tecdes.pedido.model.entity.Cliente;
-
-
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-
 public class ClienteView extends JFrame {
-
-
-    private JTextField txtId, txtNome, txtTelefone, txtEmail;
+    private ClienteController controller;
     private JTable tabelaClientes;
-    private javax.swing.table.DefaultTableModel modeloTabela;
-    private JButton btnVoltar;
-
-
-    private final ClienteService clienteService;
-
-
-    public ClienteView(ClienteService clienteService) {
-        this.clienteService = clienteService;
-       
-        setTitle("👥 Gerenciamento de Clientes");
-        setSize(800, 600);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-       
-        inicializarComponentes();
-        carregarClientes();
-        setVisible(true);
+    private DefaultTableModel tableModel;
+    
+    private JTextField txtNome, txtCadastro, txtEmail, txtTelefone;
+    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar;
+    
+    // CONSTRUTOR PADRÃO (sem parâmetros)
+    public ClienteView() {
+        init();
     }
-
-
-    private void inicializarComponentes() {
-        getContentPane().setLayout(null);
-       
-        // TÍTULO
-        JLabel lblTitulo = new JLabel("GERENCIAMENTO DE CLIENTES");
-        lblTitulo.setBounds(250, 10, 300, 30);
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 16));
-        lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
-        add(lblTitulo);
-       
-        // PAINEL DE DADOS
-        JPanel painelDados = new JPanel();
-        painelDados.setLayout(null);
-        painelDados.setBounds(20, 50, 350, 250);
-        painelDados.setBorder(BorderFactory.createTitledBorder("Dados do Cliente"));
-       
-        JLabel lblId = new JLabel("ID (buscar):");
-        lblId.setBounds(10, 30, 120, 25);
-        painelDados.add(lblId);
-       
-        txtId = new JTextField();
-        txtId.setBounds(140, 30, 180, 25);
-        painelDados.add(txtId);
-       
-        JLabel lblNome = new JLabel("Nome*:");
-        lblNome.setBounds(10, 70, 120, 25);
-        painelDados.add(lblNome);
-       
+    
+    // CONSTRUTOR PARA USO DO LoginView (com parent e modal)
+    public ClienteView(JFrame parent, boolean modal) {
+        init();
+        setLocationRelativeTo(parent); // Centraliza em relação à janela pai
+        
+        if (modal) {
+            // Torna a janela modal (bloqueia a janela pai)
+            setAlwaysOnTop(true);
+            setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+        }
+    }
+    
+    // CONSTRUTOR PARA USO DO MainMenuView (sem parent)
+    public ClienteView(boolean modal) {
+        init();
+        if (modal) {
+            setAlwaysOnTop(true);
+            setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+        }
+    }
+    
+    private void init() {
+        controller = new ClienteController();
+        configurarJanela();
+        criarComponentes();
+        carregarClientes();
+    }
+    
+    private void configurarJanela() {
+        setTitle("🍔 Gestão de Clientes");
+        setSize(900, 600);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
+        
+        // Ícone da janela
+        try {
+            setIconImage(new ImageIcon(getClass().getResource("/icons/clientes.png")).getImage());
+        } catch (Exception e) {
+            // Ignora se não tiver ícone
+        }
+    }
+    
+    private void criarComponentes() {
+        // Painel superior (formulário)
+        JPanel panelForm = new JPanel(new GridLayout(5, 2, 10, 10));
+        panelForm.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(46, 125, 50), 2),
+            "📝 Dados do Cliente"
+        ));
+        panelForm.setBackground(new Color(240, 240, 240));
+        
+        panelForm.add(new JLabel("👤 Nome:"));
         txtNome = new JTextField();
-        txtNome.setBounds(140, 70, 180, 25);
-        painelDados.add(txtNome);
-       
-        JLabel lblTelefone = new JLabel("Telefone*:");
-        lblTelefone.setBounds(10, 110, 120, 25);
-        painelDados.add(lblTelefone);
-       
-        txtTelefone = new JTextField();
-        txtTelefone.setBounds(140, 110, 180, 25);
-        painelDados.add(txtTelefone);
-       
-        JLabel lblEmail = new JLabel("E-mail:");
-        lblEmail.setBounds(10, 150, 120, 25);
-        painelDados.add(lblEmail);
-       
+        panelForm.add(txtNome);
+        
+        panelForm.add(new JLabel("🔢 Nº Cadastro (3 dígitos):"));
+        txtCadastro = new JTextField();
+        panelForm.add(txtCadastro);
+        
+        panelForm.add(new JLabel("📧 Email:"));
         txtEmail = new JTextField();
-        txtEmail.setBounds(140, 150, 180, 25);
-        painelDados.add(txtEmail);
-       
-        add(painelDados);
-       
-        // BOTÕES DE AÇÃO
-        JPanel painelBotoes = new JPanel();
-        painelBotoes.setLayout(new GridLayout(2, 3, 10, 10));
-        painelBotoes.setBounds(20, 310, 350, 120);
-        painelBotoes.setBorder(BorderFactory.createTitledBorder("Ações"));
-       
-        JButton btnSalvar = new JButton("💾 Salvar");
-        btnSalvar.addActionListener(e -> salvarCliente());
-        painelBotoes.add(btnSalvar);
-       
-        JButton btnAtualizar = new JButton("✏️ Atualizar");
-        btnAtualizar.addActionListener(e -> atualizarCliente());
-        painelBotoes.add(btnAtualizar);
-       
-        JButton btnExcluir = new JButton("🗑️ Excluir");
-        btnExcluir.addActionListener(e -> excluirCliente());
-        painelBotoes.add(btnExcluir);
-       
-        JButton btnBuscar = new JButton("🔍 Buscar");
-        btnBuscar.addActionListener(e -> buscarCliente());
-        painelBotoes.add(btnBuscar);
-       
-        JButton btnListar = new JButton("📋 Listar");
-        btnListar.addActionListener(e -> carregarClientes());
-        painelBotoes.add(btnListar);
-       
-        JButton btnLimpar = new JButton("🧹 Limpar");
-        btnLimpar.addActionListener(e -> limparCampos());
-        painelBotoes.add(btnLimpar);
-       
-        add(painelBotoes);
-       
-        // TABELA DE CLIENTES
-        JPanel painelTabela = new JPanel();
-        painelTabela.setLayout(null);
-        painelTabela.setBounds(400, 50, 360, 400);
-        painelTabela.setBorder(BorderFactory.createTitledBorder("Clientes Cadastrados"));
-       
-        String[] colunas = {"ID", "Nome", "Telefone", "E-mail"};
-        modeloTabela = new javax.swing.table.DefaultTableModel(colunas, 0) {
+        panelForm.add(txtEmail);
+        
+        panelForm.add(new JLabel("📞 Telefone:"));
+        txtTelefone = new JTextField();
+        panelForm.add(txtTelefone);
+        
+        // Botão de busca rápida
+        panelForm.add(new JLabel("🔍 Buscar por Nome:"));
+        JTextField txtBusca = new JTextField();
+        txtBusca.addActionListener(e -> buscarCliente(txtBusca.getText()));
+        panelForm.add(txtBusca);
+        
+        add(panelForm, BorderLayout.NORTH);
+        
+        // Painel central (tabela)
+        String[] colunas = {"ID", "Nome", "Cadastro", "Email", "Telefone"};
+        tableModel = new DefaultTableModel(colunas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return false; // Tabela não editável diretamente
             }
         };
-       
-        tabelaClientes = new JTable(modeloTabela);
+        
+        tabelaClientes = new JTable(tableModel);
+        tabelaClientes.setRowHeight(30);
+        tabelaClientes.setSelectionBackground(new Color(220, 240, 255));
+        tabelaClientes.setSelectionForeground(Color.BLACK);
+        
+        // Centralizar conteúdo das colunas
+        tabelaClientes.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
+        tabelaClientes.getColumnModel().getColumn(1).setPreferredWidth(200); // Nome
+        tabelaClientes.getColumnModel().getColumn(2).setPreferredWidth(80);  // Cadastro
+        tabelaClientes.getColumnModel().getColumn(3).setPreferredWidth(200); // Email
+        tabelaClientes.getColumnModel().getColumn(4).setPreferredWidth(120); // Telefone
+        
+        JScrollPane scrollPane = new JScrollPane(tabelaClientes);
+        scrollPane.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(30, 144, 255), 2),
+            "👥 Clientes Cadastrados"
+        ));
+        add(scrollPane, BorderLayout.CENTER);
+        
+        // Painel inferior (botões)
+        JPanel panelBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        panelBotoes.setBackground(new Color(240, 240, 240));
+        panelBotoes.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        
+        btnSalvar = criarBotao("💾 Salvar", new Color(46, 125, 50));
+        btnEditar = criarBotao("✏️ Editar", new Color(30, 144, 255));
+        btnExcluir = criarBotao("🗑️ Excluir", new Color(220, 53, 69));
+        btnLimpar = criarBotao("🧹 Limpar", new Color(108, 117, 125));
+        
+        JButton btnAtualizar = criarBotao("🔄 Atualizar", new Color(255, 193, 7));
+        btnAtualizar.addActionListener(e -> carregarClientes());
+        
+        JButton btnFechar = criarBotao("❌ Fechar", new Color(108, 117, 125));
+        btnFechar.addActionListener(e -> dispose());
+        
+        panelBotoes.add(btnSalvar);
+        panelBotoes.add(btnEditar);
+        panelBotoes.add(btnExcluir);
+        panelBotoes.add(btnLimpar);
+        panelBotoes.add(btnAtualizar);
+        panelBotoes.add(btnFechar);
+        
+        add(panelBotoes, BorderLayout.SOUTH);
+        
+        // Configurar eventos
+        configurarEventos();
+        
+        // Seleção na tabela preenche formulário
         tabelaClientes.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting() && tabelaClientes.getSelectedRow() != -1) {
-                preencherCamposComSelecionado();
+            if (!e.getValueIsAdjusting()) {
+                preencherFormulario();
             }
         });
-       
-        JScrollPane scrollTabela = new JScrollPane(tabelaClientes);
-        scrollTabela.setBounds(10, 20, 340, 370);
-        painelTabela.add(scrollTabela);
-       
-        add(painelTabela);
-       
-        // BOTÃO VOLTAR
-        btnVoltar = new JButton("⬅️ Voltar ao Menu Principal");
-        btnVoltar.setBounds(20, 440, 200, 35);
-        btnVoltar.addActionListener(e -> this.dispose());
-        add(btnVoltar);
     }
-   
+    
+    private JButton criarBotao(String texto, Color cor) {
+        JButton btn = new JButton(texto);
+        btn.setBackground(cor);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setFont(new Font("Arial", Font.BOLD, 12));
+        btn.setPreferredSize(new Dimension(120, 35));
+        
+        // Efeito hover
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btn.setBackground(cor.darker());
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btn.setBackground(cor);
+            }
+        });
+        
+        return btn;
+    }
+    
+    private void configurarEventos() {
+        btnSalvar.addActionListener(e -> salvarCliente());
+        btnEditar.addActionListener(e -> editarCliente());
+        btnExcluir.addActionListener(e -> excluirCliente());
+        btnLimpar.addActionListener(e -> limparFormulario());
+    }
+    
+    private void carregarClientes() {
+        tableModel.setRowCount(0); // Limpar tabela
+        List<Cliente> clientes = controller.listarTodos();
+        
+        for (Cliente c : clientes) {
+            tableModel.addRow(new Object[]{
+                c.getIdCliente(),
+                c.getNmCliente(),
+                c.getNrCadastro(),
+                c.getDsEmail(),
+                c.getNrTelefone()
+            });
+        }
+        
+        // Mostrar contagem
+        if (clientes.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                "Nenhum cliente cadastrado.\nClique em 'Salvar' para adicionar um novo cliente.",
+                "Sem Clientes",
+                JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+    
+    private void buscarCliente(String nomeBusca) {
+        if (nomeBusca.trim().isEmpty()) {
+            carregarClientes();
+            return;
+        }
+        
+        tableModel.setRowCount(0);
+        List<Cliente> clientes = controller.listarTodos();
+        
+        for (Cliente c : clientes) {
+            if (c.getNmCliente().toLowerCase().contains(nomeBusca.toLowerCase())) {
+                tableModel.addRow(new Object[]{
+                    c.getIdCliente(),
+                    c.getNmCliente(),
+                    c.getNrCadastro(),
+                    c.getDsEmail(),
+                    c.getNrTelefone()
+                });
+            }
+        }
+    }
+    
     private void salvarCliente() {
         try {
-            if (txtNome.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Nome é obrigatório!", "Erro", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-           
-            if (txtTelefone.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Telefone é obrigatório!", "Erro", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-           
-            // ✅ AGORA FUNCIONA COM O NOVO MÉTODO
-            clienteService.salvarCliente(
-                txtNome.getText().trim(),
-                txtTelefone.getText().trim(),
-                txtEmail.getText().trim()
-            );
-           
-            JOptionPane.showMessageDialog(this, "✅ Cliente salvo com sucesso!");
-            carregarClientes();
-            limparCampos();
-           
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "❌ Erro ao salvar cliente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-   
-    private void buscarCliente() {
-        try {
-            if (txtId.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Digite o ID do cliente!", "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-           
-            Long id = Long.parseLong(txtId.getText().trim());
-           
-            // ✅ AGORA FUNCIONA COM O NOVO MÉTODO buscarPorId()
-            Cliente cliente = clienteService.buscarPorId(id);
-           
-            if (cliente != null) {
-                txtNome.setText(cliente.getNome());
-                txtTelefone.setText(cliente.getFone());
-               
-                // ✅ AGORA TEMOS getEmail()
-                txtEmail.setText(cliente.getEmail() != null ? cliente.getEmail() : "");
-               
-                // Selecionar na tabela
-                for (int i = 0; i < tabelaClientes.getRowCount(); i++) {
-                    if (tabelaClientes.getValueAt(i, 0).equals(id)) {
-                        tabelaClientes.setRowSelectionInterval(i, i);
-                        break;
-                    }
-                }
-               
-                JOptionPane.showMessageDialog(this, "✅ Cliente encontrado!");
-            } else {
-                JOptionPane.showMessageDialog(this, "❌ Cliente não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
-            }
-           
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "❌ ID deve ser um número válido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "❌ Erro ao buscar cliente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-   
-    private void atualizarCliente() {
-        try {
-            if (txtId.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "ID é necessário para atualizar!", "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-           
-            Long id = Long.parseLong(txtId.getText().trim());
             String nome = txtNome.getText().trim();
-            String telefone = txtTelefone.getText().trim();
+            String cadastro = txtCadastro.getText().trim();
             String email = txtEmail.getText().trim();
-           
-            if (nome.isEmpty() || telefone.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Nome e telefone são obrigatórios!", "Erro", JOptionPane.ERROR_MESSAGE);
+            String telefone = txtTelefone.getText().trim();
+            
+            // Validar campos
+            if (nome.isEmpty() || cadastro.isEmpty() || email.isEmpty() || telefone.isEmpty()) {
+                JOptionPane.showMessageDialog(this, 
+                    "❌ Preencha todos os campos!", 
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-           
-            // ✅ AGORA FUNCIONA COM O NOVO MÉTODO
-            clienteService.atualizarCliente(id, nome, telefone, email);
-           
-            JOptionPane.showMessageDialog(this, "✅ Cliente atualizado com sucesso!");
+            
+            // Validar número de cadastro (3 dígitos)
+            if (!cadastro.matches("\\d{3}")) {
+                JOptionPane.showMessageDialog(this,
+                    "❌ Número de cadastro deve ter exatamente 3 dígitos!\nExemplo: 123",
+                    "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // Validar email básico
+            if (!email.contains("@") || !email.contains(".")) {
+                JOptionPane.showMessageDialog(this,
+                    "⚠️ Email inválido! Use um email válido.\nExemplo: cliente@exemplo.com",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+                // Não impede o cadastro, apenas avisa
+            }
+            
+            // Validar telefone
+            if (!telefone.matches("\\d{10,11}")) {
+                JOptionPane.showMessageDialog(this,
+                    "⚠️ Telefone deve ter 10 ou 11 dígitos!\nExemplo: 11987654321",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+            }
+            
+            // Verificar se cadastro já existe
+            if (controller.cadastroExiste(cadastro)) {
+                JOptionPane.showMessageDialog(this,
+                    "❌ Cadastro " + cadastro + " já está em uso!\nUse outro número de cadastro.",
+                    "Cadastro Duplicado",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // Salvar cliente
+            controller.salvar(nome, cadastro, email, telefone);
+            
+            JOptionPane.showMessageDialog(this, 
+                "✅ Cliente salvo com sucesso!\n\n" +
+                "Nome: " + nome + "\n" +
+                "Cadastro: " + cadastro + "\n" +
+                "Email: " + email + "\n" +
+                "Telefone: " + telefone,
+                "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            
+            limparFormulario();
             carregarClientes();
-            limparCampos();
-           
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "❌ ID deve ser um número válido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "❌ Erro ao atualizar cliente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, 
+                "❌ Erro ao salvar cliente: " + ex.getMessage(), 
+                "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
-   
-    private void excluirCliente() {
+    
+    private void editarCliente() {
+        int linhaSelecionada = tabelaClientes.getSelectedRow();
+        if (linhaSelecionada == -1) {
+            JOptionPane.showMessageDialog(this,
+                "❌ Selecione um cliente para editar!",
+                "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
         try {
-            if (txtId.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Digite o ID do cliente para excluir!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            int id = (int) tableModel.getValueAt(linhaSelecionada, 0);
+            String nomeAntigo = tableModel.getValueAt(linhaSelecionada, 1).toString();
+            String cadastroAntigo = tableModel.getValueAt(linhaSelecionada, 2).toString();
+            
+            String nome = txtNome.getText().trim();
+            String cadastro = txtCadastro.getText().trim();
+            String email = txtEmail.getText().trim();
+            String telefone = txtTelefone.getText().trim();
+            
+            // Verificar se houve alteração no cadastro
+            if (!cadastro.equals(cadastroAntigo) && controller.cadastroExiste(cadastro)) {
+                JOptionPane.showMessageDialog(this,
+                    "❌ Cadastro " + cadastro + " já está em uso!\nUse outro número de cadastro.",
+                    "Cadastro Duplicado",
+                    JOptionPane.ERROR_MESSAGE);
                 return;
             }
-           
-            Long id = Long.parseLong(txtId.getText().trim());
-           
-            int confirm = JOptionPane.showConfirmDialog(this,
-                "Tem certeza que deseja excluir o cliente ID " + id + "?",
-                "Confirmação de Exclusão",
-                JOptionPane.YES_NO_OPTION);
-           
-            if (confirm == JOptionPane.YES_OPTION) {
-                // ✅ MÉTODO JÁ EXISTE
-                clienteService.excluirCliente(id);
-                JOptionPane.showMessageDialog(this, "✅ Cliente excluído com sucesso!");
-                carregarClientes();
-                limparCampos();
-            }
-           
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "❌ ID deve ser um número válido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "❌ Erro ao excluir cliente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            
+            controller.atualizar(id, nome, cadastro, email, telefone);
+            
+            JOptionPane.showMessageDialog(this,
+                "✅ Cliente atualizado com sucesso!\n\n" +
+                "Nome: " + nomeAntigo + " → " + nome + "\n" +
+                "Cadastro: " + cadastroAntigo + " → " + cadastro,
+                "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            
+            carregarClientes();
+            
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                "❌ Erro ao atualizar cliente: " + ex.getMessage(),
+                "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
-   
-    private void carregarClientes() {
-        try {
-            modeloTabela.setRowCount(0);
-            List<Cliente> clientes = clienteService.buscarTodos();
-           
-            if (clientes.isEmpty()) {
-                modeloTabela.addRow(new Object[]{"-", "Nenhum cliente cadastrado", "-", "-"});
-            } else {
-                for (Cliente cliente : clientes) {
-                    modeloTabela.addRow(new Object[]{
-                        cliente.getIdCliente(),
-                        cliente.getNome(),
-                        cliente.getFone(),
-                        cliente.getEmail() != null ? cliente.getEmail() : ""
-                    });
-                }
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "❌ Erro ao carregar clientes: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-   
-    private void preencherCamposComSelecionado() {
+    
+    private void excluirCliente() {
         int linhaSelecionada = tabelaClientes.getSelectedRow();
-        if (linhaSelecionada >= 0) {
+        if (linhaSelecionada == -1) {
+            JOptionPane.showMessageDialog(this,
+                "❌ Selecione um cliente para excluir!",
+                "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        int id = (int) tableModel.getValueAt(linhaSelecionada, 0);
+        String nome = tableModel.getValueAt(linhaSelecionada, 1).toString();
+        String cadastro = tableModel.getValueAt(linhaSelecionada, 2).toString();
+        
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "⚠️ TEM CERTEZA QUE DESEJA EXCLUIR ESTE CLIENTE?\n\n" +
+            "Nome: " + nome + "\n" +
+            "Cadastro: " + cadastro + "\n\n" +
+            "Esta ação NÃO pode ser desfeita!",
+            "⚠️ CONFIRMAR EXCLUSÃO ⚠️",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
+        
+        if (confirm == JOptionPane.YES_OPTION) {
             try {
-                Object idObj = tabelaClientes.getValueAt(linhaSelecionada, 0);
-                if (idObj instanceof Long || (idObj instanceof String && !((String) idObj).equals("-"))) {
-                    Long id = Long.parseLong(idObj.toString());
-                   
-                    // ✅ AGORA FUNCIONA
-                    Cliente cliente = clienteService.buscarPorId(id);
-                   
-                    if (cliente != null) {
-                        txtId.setText(String.valueOf(cliente.getIdCliente()));
-                        txtNome.setText(cliente.getNome());
-                        txtTelefone.setText(cliente.getFone());
-                        txtEmail.setText(cliente.getEmail() != null ? cliente.getEmail() : "");
-                    }
-                }
-            } catch (Exception e) {
-                // Ignora erros ao clicar em linha vazia
+                controller.excluir(id);
+                
+                JOptionPane.showMessageDialog(this,
+                    "✅ Cliente excluído com sucesso!\n\n" +
+                    "Nome: " + nome + "\n" +
+                    "Cadastro: " + cadastro,
+                    "Exclusão Concluída",
+                    JOptionPane.INFORMATION_MESSAGE);
+                
+                limparFormulario();
+                carregarClientes();
+                
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this,
+                    "❌ Erro ao excluir cliente: " + ex.getMessage(),
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE);
             }
         }
     }
-   
-    private void limparCampos() {
-        txtId.setText("");
+    
+    private void preencherFormulario() {
+        int linhaSelecionada = tabelaClientes.getSelectedRow();
+        if (linhaSelecionada != -1) {
+            txtNome.setText(tableModel.getValueAt(linhaSelecionada, 1).toString());
+            txtCadastro.setText(tableModel.getValueAt(linhaSelecionada, 2).toString());
+            txtEmail.setText(tableModel.getValueAt(linhaSelecionada, 3).toString());
+            txtTelefone.setText(tableModel.getValueAt(linhaSelecionada, 4).toString());
+        }
+    }
+    
+    private void limparFormulario() {
         txtNome.setText("");
-        txtTelefone.setText("");
+        txtCadastro.setText("");
         txtEmail.setText("");
+        txtTelefone.setText("");
         tabelaClientes.clearSelection();
     }
+    
+    // Método estático para facilitar abertura
+    public static void mostrarTela() {
+        SwingUtilities.invokeLater(() -> {
+            ClienteView view = new ClienteView();
+            view.setVisible(true);
+        });
+    }
+    
+    // Método estático para abrir como modal
+    public static void mostrarTelaModal(JFrame parent) {
+        SwingUtilities.invokeLater(() -> {
+            ClienteView view = new ClienteView(parent, true);
+            view.setVisible(true);
+        });
+    }
 }
-

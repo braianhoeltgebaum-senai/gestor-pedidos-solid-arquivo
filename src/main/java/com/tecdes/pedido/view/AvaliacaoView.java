@@ -1,182 +1,264 @@
 package com.tecdes.pedido.view;
 
-
-import com.tecdes.pedido.service.AvaliacaoService;
+import com.tecdes.pedido.controller.AvaliacaoController;
+//import com.tecdes.pedido.controller.PedidoController;
 import com.tecdes.pedido.model.entity.Avaliacao;
-
-
 import javax.swing.*;
 import java.awt.*;
 
-
 public class AvaliacaoView extends JFrame {
-
-
-    private JTextField txtIdPedido;
+    
+    private JTextField txtNrPedido;
+    private JTextField txtIdCliente;
     private JComboBox<Integer> cbNota;
     private JTextArea txtComentario;
-    private JButton btnVoltar;
-
-
-    private final AvaliacaoService avaliacaoService;
-
-
-    public AvaliacaoView(AvaliacaoService avaliacaoService) {
-        this.avaliacaoService = avaliacaoService;
-       
-        setTitle("⭐ Avaliar Pedido");
-        setSize(400, 450);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-       
-        inicializarComponentes();
+    private JButton btnSalvar, btnLimpar;
+    
+    private final AvaliacaoController avaliacaoController;
+    //private final PedidoController pedidoController;
+    
+    public AvaliacaoView() {
+        this.avaliacaoController = new AvaliacaoController();
+       // this.pedidoController = new PedidoController();
+        
+        configurarJanela();
+        criarComponentes();
         setVisible(true);
     }
-
-
-    private void inicializarComponentes() {
-        getContentPane().setLayout(null);
-       
-        // TÍTULO
-        JLabel lblTitulo = new JLabel("AVALIAÇÃO DE PEDIDO");
-        lblTitulo.setBounds(100, 10, 200, 30);
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 14));
-        lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
-        add(lblTitulo);
-       
-        // PAINEL DE AVALIAÇÃO
-        JPanel painelAvaliacao = new JPanel();
-        painelAvaliacao.setLayout(null);
-        painelAvaliacao.setBounds(20, 50, 350, 250);
-        painelAvaliacao.setBorder(BorderFactory.createTitledBorder("Dados da Avaliação"));
-       
-        JLabel lblIdPedido = new JLabel("ID do Pedido:");
-        lblIdPedido.setBounds(10, 30, 120, 25);
-        painelAvaliacao.add(lblIdPedido);
-       
-        txtIdPedido = new JTextField();
-        txtIdPedido.setBounds(140, 30, 180, 25);
-        painelAvaliacao.add(txtIdPedido);
-       
-        JLabel lblNota = new JLabel("Nota (1-5):");
-        lblNota.setBounds(10, 70, 120, 25);
-        painelAvaliacao.add(lblNota);
-       
-        Integer[] notas = {1, 2, 3, 4, 5};
-        cbNota = new JComboBox<>(notas);
-        cbNota.setBounds(140, 70, 180, 25);
-        cbNota.setSelectedIndex(4); // Nota 5 por padrão
-        painelAvaliacao.add(cbNota);
-       
-        JLabel lblComentario = new JLabel("Comentário:");
-        lblComentario.setBounds(10, 110, 120, 25);
-        painelAvaliacao.add(lblComentario);
-       
-        txtComentario = new JTextArea();
-        txtComentario.setLineWrap(true);
-        JScrollPane scrollComentario = new JScrollPane(txtComentario);
-        scrollComentario.setBounds(140, 110, 180, 100);
-        painelAvaliacao.add(scrollComentario);
-       
-        add(painelAvaliacao);
-       
-        // BOTÕES
-        JPanel painelBotoes = new JPanel();
-        painelBotoes.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        painelBotoes.setBounds(20, 310, 350, 80);
-       
-        JButton btnSalvar = new JButton("⭐ Registrar Avaliação");
-        btnSalvar.addActionListener(e -> registrarAvaliacao());
-        painelBotoes.add(btnSalvar);
-       
-        JButton btnLimpar = new JButton("🧹 Limpar");
-        btnLimpar.addActionListener(e -> limparCampos());
-        painelBotoes.add(btnLimpar);
-       
-        btnVoltar = new JButton("⬅️ Voltar");
-        btnVoltar.addActionListener(e -> this.dispose());
-        painelBotoes.add(btnVoltar);
-       
-        add(painelBotoes);
+    
+    private void configurarJanela() {
+        setTitle("⭐ Avaliar Pedido");
+        setSize(500, 450);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }
-   
+    
+    private void criarComponentes() {
+        getContentPane().setLayout(new BorderLayout());
+        
+        // Painel principal
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        // Título
+        JLabel lblTitulo = new JLabel("⭐ AVALIAR PEDIDO");
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 20));
+        lblTitulo.setForeground(new Color(255, 193, 7)); // Amarelo
+        lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(lblTitulo);
+        
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
+        
+        // Número do Pedido
+        JPanel panelPedido = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panelPedido.add(new JLabel("Número do Pedido:"));
+        txtNrPedido = new JTextField(10);
+        panelPedido.add(txtNrPedido);
+        panel.add(panelPedido);
+        
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        
+        // ID do Cliente
+        JPanel panelCliente = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panelCliente.add(new JLabel("ID do Cliente:"));
+        txtIdCliente = new JTextField(10);
+        panelCliente.add(txtIdCliente);
+        panel.add(panelCliente);
+        
+        panel.add(Box.createRigidArea(new Dimension(0, 15)));
+        
+        // Nota (0-10 conforme sua entidade)
+        JPanel panelNota = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panelNota.add(new JLabel("Nota (0-10):"));
+        Integer[] notas = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        cbNota = new JComboBox<>(notas);
+        cbNota.setSelectedIndex(10); // 10 por padrão
+        panelNota.add(cbNota);
+        panel.add(panelNota);
+        
+        // Indicador visual da nota
+        JPanel panelEstrelas = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel lblEstrelas = new JLabel("★★★★★☆☆☆☆☆");
+        lblEstrelas.setFont(new Font("Arial", Font.BOLD, 16));
+        lblEstrelas.setForeground(new Color(255, 193, 7));
+        panelEstrelas.add(lblEstrelas);
+        panel.add(panelEstrelas);
+        
+        // Atualizar estrelas quando mudar a nota
+        cbNota.addActionListener(e -> {
+            int nota = (Integer) cbNota.getSelectedItem();
+            StringBuilder estrelas = new StringBuilder();
+            for (int i = 0; i < 10; i++) {
+                if (i < nota) {
+                    estrelas.append("★");
+                } else {
+                    estrelas.append("☆");
+                }
+            }
+            lblEstrelas.setText(estrelas.toString());
+        });
+        
+        panel.add(Box.createRigidArea(new Dimension(0, 15)));
+        
+        // Comentário
+        JPanel panelComentario = new JPanel(new BorderLayout());
+        panelComentario.add(new JLabel("Comentário (opcional, máx 255 caracteres):"), BorderLayout.NORTH);
+        txtComentario = new JTextArea(4, 30);
+        txtComentario.setLineWrap(true);
+        txtComentario.setWrapStyleWord(true);
+        JScrollPane scrollComentario = new JScrollPane(txtComentario);
+        panelComentario.add(scrollComentario, BorderLayout.CENTER);
+        panel.add(panelComentario);
+        
+        panel.add(Box.createRigidArea(new Dimension(0, 25)));
+        
+        // Botões
+        JPanel panelBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        
+        btnSalvar = new JButton("⭐ Registrar Avaliação");
+        btnSalvar.setBackground(new Color(255, 193, 7)); // Amarelo
+        btnSalvar.setForeground(Color.BLACK);
+        btnSalvar.setFont(new Font("Arial", Font.BOLD, 14));
+        btnSalvar.addActionListener(e -> registrarAvaliacao());
+        panelBotoes.add(btnSalvar);
+        
+        btnLimpar = new JButton("🧹 Limpar");
+        btnLimpar.addActionListener(e -> limparCampos());
+        panelBotoes.add(btnLimpar);
+        
+        JButton btnVoltar = new JButton("⬅️ Voltar");
+        btnVoltar.addActionListener(e -> dispose());
+        panelBotoes.add(btnVoltar);
+        
+        panel.add(panelBotoes);
+        
+        getContentPane().add(panel, BorderLayout.CENTER);
+    }
+    
     private void registrarAvaliacao() {
         try {
-            // Validações básicas
-            if (txtIdPedido.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this,
-                    "ID do Pedido é obrigatório!",
-                    "Erro", JOptionPane.ERROR_MESSAGE);
+            // Validações
+            String nrPedidoStr = txtNrPedido.getText().trim();
+            String idClienteStr = txtIdCliente.getText().trim();
+            
+            if (nrPedidoStr.isEmpty()) {
+                JOptionPane.showMessageDialog(this, 
+                    "Informe o número do pedido!", 
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-           
-            Long idPedido = Long.parseLong(txtIdPedido.getText().trim());
-            Integer nota = (Integer) cbNota.getSelectedItem();
+            
+            if (idClienteStr.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                    "Informe o ID do cliente!",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
+            int nrPedido = Integer.parseInt(nrPedidoStr);
+            int idCliente = Integer.parseInt(idClienteStr);
+            int nota = (Integer) cbNota.getSelectedItem();
             String comentario = txtComentario.getText().trim();
-           
-            // Validação da nota
-            if (nota == null || nota < 1 || nota > 5) {
+            
+            // Validar nota
+            if (!avaliacaoController.validarNota(nota)) {
                 JOptionPane.showMessageDialog(this,
-                    "Nota deve ser entre 1 e 5!",
+                    "Nota inválida! Deve ser entre 0 e 10.",
                     "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            
+            // Validar comentário
+            if (!avaliacaoController.validarComentario(comentario)) {
+                JOptionPane.showMessageDialog(this,
+                    "Comentário muito longo! Máximo 255 caracteres.",
+                    "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
            
-            // Criar objeto Avaliacao usando o construtor correto
-            // Baseado no seu código original: new Avaliacao(idPedido, nota, comentario)
-            Avaliacao avaliacao = new Avaliacao();
-           
-            // Configurar os campos (ajuste conforme sua classe Avaliacao)
-            avaliacao.setIdPedido(idPedido);
-            avaliacao.setNota(nota);
-            avaliacao.setComentario(comentario);
-           
-            // Registrar usando o método CORRETO do service
-            Avaliacao avaliacaoRegistrada = avaliacaoService.registrarAvaliacao(avaliacao);
-           
-            // Mensagem de sucesso
-            if (avaliacaoRegistrada != null) {
+            
+            int idPedido = nrPedido; // Assumindo que número do pedido = ID (para simplificar)
+            
+            // Verificar se pedido já foi avaliado
+            if (avaliacaoController.pedidoFoiAvaliado(idPedido)) {
+                int resposta = JOptionPane.showConfirmDialog(this,
+                    "Este pedido já foi avaliado. Deseja substituir a avaliação?",
+                    "Avaliação Existente",
+                    JOptionPane.YES_NO_OPTION);
+                
+                if (resposta != JOptionPane.YES_OPTION) {
+                    return;
+                }
+            }
+            
+            // Registrar avaliação usando o método CORRETO do controller
+            Avaliacao avaliacao = avaliacaoController.registrar(
+                idPedido, idCliente, nota, comentario);
+            
+            if (avaliacao != null) {
                 JOptionPane.showMessageDialog(this,
                     "✅ Avaliação registrada com sucesso!\n\n" +
-                    "📋 Detalhes:\n" +
-                    "   📝 ID do Pedido: " + idPedido + "\n" +
-                    "   ⭐ Nota: " + nota + "/5\n" +
-                    (comentario.isEmpty() ? "" : "   💬 Comentário: " + comentario + "\n") +
-                    "   🆔 ID da Avaliação: " + (avaliacaoRegistrada.getIdAvaliacao() != null ?
-                        avaliacaoRegistrada.getIdAvaliacao() : "Gerado"),
-                    "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-               
+                    "Detalhes:\n" +
+                    "📋 Pedido: #" + nrPedido + "\n" +
+                    "👤 Cliente: #" + idCliente + "\n" +
+                    "⭐ Nota: " + nota + "/10\n" +
+                    (comentario.isEmpty() ? "" : "💬 Comentário: " + comentario + "\n") +
+                    "🆔 ID Avaliação: " + avaliacao.getIdAvaliacao() + "\n\n" +
+                    "Obrigado pela sua avaliação!",
+                    "Avaliação Registrada",
+                    JOptionPane.INFORMATION_MESSAGE);
+                
                 limparCampos();
             } else {
                 JOptionPane.showMessageDialog(this,
                     "❌ Não foi possível registrar a avaliação.",
-                    "Erro", JOptionPane.ERROR_MESSAGE);
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE);
             }
-           
+            
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this,
-                "❌ ID do Pedido deve ser um número válido!",
-                "Erro", JOptionPane.ERROR_MESSAGE);
+                "Número do pedido e ID do cliente devem ser números!",
+                "Erro",
+                JOptionPane.ERROR_MESSAGE);
         } catch (IllegalArgumentException e) {
             JOptionPane.showMessageDialog(this,
                 "❌ " + e.getMessage(),
-                "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (RuntimeException e) {
-            JOptionPane.showMessageDialog(this,
-                "❌ " + e.getMessage(),
-                "Erro", JOptionPane.ERROR_MESSAGE);
+                "Erro",
+                JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
                 "❌ Erro ao registrar avaliação: " + e.getMessage(),
-                "Erro", JOptionPane.ERROR_MESSAGE);
+                "Erro",
+                JOptionPane.ERROR_MESSAGE);
             e.printStackTrace(); // Para debug
         }
     }
-   
+    
     private void limparCampos() {
-        txtIdPedido.setText("");
-        cbNota.setSelectedIndex(4); // Volta para nota 5
+        txtNrPedido.setText("");
+        txtIdCliente.setText("");
+        cbNota.setSelectedIndex(10); // Volta para nota 10
         txtComentario.setText("");
     }
+    
+    // Método estático para facilitar o uso
+    public static void mostrarTela() {
+        SwingUtilities.invokeLater(() -> {
+            AvaliacaoView view = new AvaliacaoView();
+            view.setVisible(true);
+        });
+    }
+    
+    // Método para avaliar pedido específico (conveniência)
+    public static void avaliarPedido(int nrPedido, int idCliente) {
+        SwingUtilities.invokeLater(() -> {
+            AvaliacaoView view = new AvaliacaoView();
+            view.txtNrPedido.setText(String.valueOf(nrPedido));
+            view.txtIdCliente.setText(String.valueOf(idCliente));
+            view.setVisible(true);
+        });
+    }
 }
-

@@ -1,457 +1,247 @@
 package com.tecdes.pedido.view;
 
-
-import java.util.List;
+import com.tecdes.pedido.controller.ProdutoController;
+import com.tecdes.pedido.model.entity.Produto;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-
-
-import com.tecdes.pedido.model.entity.Produto;
-import com.tecdes.pedido.service.ProdutoService;
-
+import java.awt.*;
+//import java.math.BigDecimal;
+import java.util.List;
 
 public class ProdutoView extends JFrame {
-
-
-    private JTextField txtId, txtNome, txtPreco, txtCategoria;
-    private JTextArea txtDescricao;
-    private JTable tabela;
-    private DefaultTableModel modeloTabela;
-    private JButton btnVoltar;
-
-
-    private final ProdutoService service;
-
-
-    // ✅ CORREÇÃO: Construtor recebe ProdutoService como parâmetro
-    public ProdutoView(ProdutoService produtoService) {
-        this.service = produtoService;
-       
-        inicializarComponentes();
-        configurarEventos();
-       
-        // Carregar produtos automaticamente ao abrir
-        listarTodos();
-        setVisible(true);
-
-
+    private ProdutoController controller;
+    private JTable tabelaProdutos;
+    private DefaultTableModel tableModel;
+    
+    private JTextField txtNome, txtDescricao, txtValor;
+    private JComboBox<String> cbxTipo;
+    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar;
+    
+    public ProdutoView() {
+        controller = new ProdutoController();
+        configurarJanela();
+        criarComponentes();
+        carregarProdutos();
     }
-
-
-    private void inicializarComponentes() {
-        setTitle("📦 Gerenciamento de Produtos");
-        setSize(900, 550);
-        setLocationRelativeTo(null);
+    
+    private void configurarJanela() {
+        setTitle("🍟 Gestão de Produtos");
+        setSize(900, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(null);
-
-
-        // ---------- TÍTULO ----------
-        JLabel lblTitulo = new JLabel("GERENCIAMENTO DE PRODUTOS");
-        lblTitulo.setBounds(300, 10, 300, 30);
-        lblTitulo.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 16));
-        lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
-        add(lblTitulo);
-
-
-        // ---------- CAMPOS DE ENTRADA ----------
-        JPanel painelCampos = new JPanel();
-        painelCampos.setLayout(null);
-        painelCampos.setBounds(20, 50, 300, 300);
-        painelCampos.setBorder(BorderFactory.createTitledBorder("Dados do Produto"));
-
-
-        JLabel lblId = new JLabel("ID (para buscar):");
-        lblId.setBounds(10, 30, 120, 25);
-        painelCampos.add(lblId);
-
-
-        txtId = new JTextField();
-        txtId.setBounds(140, 30, 140, 25);
-        painelCampos.add(txtId);
-
-
-        JLabel lblNome = new JLabel("Nome*:");
-        lblNome.setBounds(10, 70, 120, 25);
-        painelCampos.add(lblNome);
-
-
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
+    }
+    
+    private void criarComponentes() {
+        // Painel superior (formulário)
+        JPanel panelForm = new JPanel(new GridLayout(5, 2, 10, 10));
+        panelForm.setBorder(BorderFactory.createTitledBorder("Dados do Produto"));
+        
+        panelForm.add(new JLabel("Nome:"));
         txtNome = new JTextField();
-        txtNome.setBounds(140, 70, 140, 25);
-        painelCampos.add(txtNome);
-
-
-        JLabel lblPreco = new JLabel("Preço*:");
-        lblPreco.setBounds(10, 110, 120, 25);
-        painelCampos.add(lblPreco);
-
-
-        txtPreco = new JTextField();
-        txtPreco.setBounds(140, 110, 140, 25);
-        painelCampos.add(txtPreco);
-
-
-        JLabel lblCategoria = new JLabel("Categoria:");
-        lblCategoria.setBounds(10, 150, 120, 25);
-        painelCampos.add(lblCategoria);
-
-
-        txtCategoria = new JTextField();
-        txtCategoria.setBounds(140, 150, 140, 25);
-        painelCampos.add(txtCategoria);
-
-
-        JLabel lblDescricao = new JLabel("Descrição:");
-        lblDescricao.setBounds(10, 190, 120, 25);
-        painelCampos.add(lblDescricao);
-
-
-        txtDescricao = new JTextArea();
-        txtDescricao.setLineWrap(true);
-        JScrollPane scrollDesc = new JScrollPane(txtDescricao);
-        scrollDesc.setBounds(140, 190, 140, 80);
-        painelCampos.add(scrollDesc);
-
-
-        add(painelCampos);
-
-
-        // ---------- BOTÕES DE AÇÃO ----------
-        JPanel painelBotoes = new JPanel();
-        painelBotoes.setLayout(null);
-        painelBotoes.setBounds(20, 360, 300, 130);
-        painelBotoes.setBorder(BorderFactory.createTitledBorder("Ações"));
-
-
-        JButton btnSalvar = new JButton("💾 Salvar Novo");
-        btnSalvar.setBounds(10, 20, 130, 30);
-        painelBotoes.add(btnSalvar);
-
-
-        JButton btnAtualizar = new JButton("✏️ Atualizar");
-        btnAtualizar.setBounds(150, 20, 130, 30);
-        painelBotoes.add(btnAtualizar);
-
-
-        JButton btnExcluir = new JButton("🗑️ Excluir");
-        btnExcluir.setBounds(10, 60, 130, 30);
-        painelBotoes.add(btnExcluir);
-
-
-        JButton btnBuscar = new JButton("🔍 Buscar por ID");
-        btnBuscar.setBounds(150, 60, 130, 30);
-        painelBotoes.add(btnBuscar);
-
-
-        JButton btnListar = new JButton("📋 Listar Todos");
-        btnListar.setBounds(10, 100, 130, 30);
-        painelBotoes.add(btnListar);
-
-
-        JButton btnLimpar = new JButton("🧹 Limpar");
-        btnLimpar.setBounds(150, 100, 130, 30);
-        painelBotoes.add(btnLimpar);
-
-
-        add(painelBotoes);
-
-
-        // ---------- TABELA DE PRODUTOS ----------
-        JPanel painelTabela = new JPanel();
-        painelTabela.setLayout(null);
-        painelTabela.setBounds(350, 50, 520, 400);
-        painelTabela.setBorder(BorderFactory.createTitledBorder("Produtos Cadastrados"));
-
-
-        String[] colunas = {"ID", "Nome", "Preço", "Categoria", "Descrição"};
-        modeloTabela = new DefaultTableModel(colunas, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // Tabela não editável diretamente
-            }
-        };
-       
-        tabela = new JTable(modeloTabela);
-        tabela.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting() && tabela.getSelectedRow() != -1) {
-                preencherCamposComSelecionado();
-            }
+        panelForm.add(txtNome);
+        
+        panelForm.add(new JLabel("Tipo:"));
+        String[] tipos = {"L (Lanche)", "B (Bebida)", "C (Complemento)"};
+        cbxTipo = new JComboBox<>(tipos);
+        panelForm.add(cbxTipo);
+        
+        panelForm.add(new JLabel("Descrição:"));
+        txtDescricao = new JTextField();
+        panelForm.add(txtDescricao);
+        
+        panelForm.add(new JLabel("Valor R$:"));
+        txtValor = new JTextField();
+        panelForm.add(txtValor);
+        
+        panelForm.add(new JLabel()); // Espaço vazio
+        JLabel lblExemplo = new JLabel("Ex: 15.90");
+        lblExemplo.setForeground(Color.GRAY);
+        panelForm.add(lblExemplo);
+        
+        add(panelForm, BorderLayout.NORTH);
+        
+        // Painel central (tabela)
+        String[] colunas = {"ID", "Nome", "Tipo", "Descrição", "Valor R$"};
+        tableModel = new DefaultTableModel(colunas, 0);
+        tabelaProdutos = new JTable(tableModel);
+        JScrollPane scrollPane = new JScrollPane(tabelaProdutos);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Cardápio"));
+        add(scrollPane, BorderLayout.CENTER);
+        
+        // Painel inferior (botões)
+        JPanel panelBotoes = new JPanel(new FlowLayout());
+        
+        btnSalvar = criarBotao("💾 Salvar", new Color(46, 125, 50));
+        btnEditar = criarBotao("✏️ Editar", new Color(30, 144, 255));
+        btnExcluir = criarBotao("🗑️ Excluir", new Color(220, 53, 69));
+        btnLimpar = criarBotao("🧹 Limpar", new Color(108, 117, 125));
+        
+        panelBotoes.add(btnSalvar);
+        panelBotoes.add(btnEditar);
+        panelBotoes.add(btnExcluir);
+        panelBotoes.add(btnLimpar);
+        
+        add(panelBotoes, BorderLayout.SOUTH);
+        
+        configurarEventos();
+        tabelaProdutos.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) preencherFormulario();
         });
-
-
-        JScrollPane scrollTabela = new JScrollPane(tabela);
-        scrollTabela.setBounds(10, 20, 500, 370);
-        painelTabela.add(scrollTabela);
-
-
-        add(painelTabela);
-
-
-        // ---------- BOTÃO VOLTAR ----------
-        btnVoltar = new JButton("⬅️ Voltar ao Menu Principal");
-        btnVoltar.setBounds(350, 460, 200, 35);
-        add(btnVoltar);
-
-
-        // ---------- BOTÃO SAIR ----------
-        JButton btnSair = new JButton("❌ Sair");
-        btnSair.setBounds(670, 460, 100, 35);
-        add(btnSair);
     }
-
-
+    
+    private JButton criarBotao(String texto, Color cor) {
+        JButton btn = new JButton(texto);
+        btn.setBackground(cor);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        return btn;
+    }
+    
     private void configurarEventos() {
-        // Buscar o botão "Voltar" pelo tipo ou adicionar ação diretamente
-        for (java.awt.Component comp : getContentPane().getComponents()) {
-            if (comp instanceof JButton) {
-                JButton btn = (JButton) comp;
-                if (btn.getText().contains("Voltar")) {
-                    btn.addActionListener(e -> {
-                        this.dispose(); // Fecha esta janela
-                        // O menu principal será mostrado automaticamente
-                    });
-                }
-                if (btn.getText().contains("Sair")) {
-                    btn.addActionListener(e -> System.exit(0));
-                }
-            }
-        }
-
-
-        // Adicionar eventos aos botões de ação
-        JPanel painelBotoes = (JPanel) getContentPane().getComponent(2);
-        for (java.awt.Component comp : painelBotoes.getComponents()) {
-            if (comp instanceof JButton) {
-                JButton btn = (JButton) comp;
-                String texto = btn.getText();
-               
-                if (texto.contains("Salvar")) {
-                    btn.addActionListener(e -> salvarProduto());
-                } else if (texto.contains("Atualizar")) {
-                    btn.addActionListener(e -> atualizarProduto());
-                } else if (texto.contains("Excluir")) {
-                    btn.addActionListener(e -> excluirProduto());
-                } else if (texto.contains("Buscar")) {
-                    btn.addActionListener(e -> buscarProduto());
-                } else if (texto.contains("Listar")) {
-                    btn.addActionListener(e -> listarTodos());
-                } else if (texto.contains("Limpar")) {
-                    btn.addActionListener(e -> limparCampos());
-                }
-            }
+        btnSalvar.addActionListener(e -> salvarProduto());
+        btnEditar.addActionListener(e -> editarProduto());
+        btnExcluir.addActionListener(e -> excluirProduto());
+        btnLimpar.addActionListener(e -> limparFormulario());
+    }
+    
+    private void carregarProdutos() {
+        tableModel.setRowCount(0);
+        List<Produto> produtos = controller.buscarTodos();
+        
+        for (Produto p : produtos) {
+            tableModel.addRow(new Object[]{
+                p.getIdProduto(),
+                p.getNmProduto(),
+                p.getTpProduto(),
+                p.getDsProduto(),
+                String.format("R$ %.2f", p.getVlProduto().doubleValue())
+            });
         }
     }
-
-
-    // --------------- MÉTODOS DE AÇÃO ---------------
-
-
+    
     private void salvarProduto() {
         try {
-            // Validação dos campos obrigatórios
-            if (txtNome.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Nome é obrigatório!", "Erro", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-           
-            if (txtPreco.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Preço é obrigatório!", "Erro", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-
-            String nome = txtNome.getText().trim();
-            double preco = Double.parseDouble(txtPreco.getText().trim());
-            String categoria = txtCategoria.getText().trim();
-            String descricao = txtDescricao.getText().trim();
-
-
-            service.salvarProduto(nome, preco, categoria, descricao);
-
-
-            JOptionPane.showMessageDialog(this, "✅ Produto salvo com sucesso!");
-            listarTodos();
-            limparCampos();
-
-
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "❌ Preço deve ser um número válido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "❌ Erro ao salvar produto: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            String nome = txtNome.getText();
+            char tipo = ((String) cbxTipo.getSelectedItem()).charAt(0);
+            String descricao = txtDescricao.getText();
+            double valor = Double.parseDouble(txtValor.getText().replace(",", "."));
+            
+            if (!validarCampos()) return;
+            
+            controller.salvar(nome, tipo, descricao, valor);
+            JOptionPane.showMessageDialog(this, "Produto salvo!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            
+            limparFormulario();
+            carregarProdutos();
+            
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Valor inválido!", "Erro", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Erro: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
-
-
-    private void atualizarProduto() {
+    
+    private void editarProduto() {
+        int linha = tabelaProdutos.getSelectedRow();
+        if (linha == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione um produto!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
         try {
-            if (txtId.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "ID é necessário para atualizar!", "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-
-            Long id = Long.parseLong(txtId.getText().trim());
-            String nome = txtNome.getText().trim();
-            double preco = Double.parseDouble(txtPreco.getText().trim());
-            String categoria = txtCategoria.getText().trim();
-            String descricao = txtDescricao.getText().trim();
-
-
-            service.atualizarProduto(id, nome, preco, categoria, descricao);
-
-
-            JOptionPane.showMessageDialog(this, "✅ Produto atualizado com sucesso!");
-            listarTodos();
-            limparCampos();
-
-
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "❌ ID e Preço devem ser números válidos!", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "❌ Erro ao atualizar produto: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            int id = (int) tableModel.getValueAt(linha, 0);
+            String nome = txtNome.getText();
+            char tipo = ((String) cbxTipo.getSelectedItem()).charAt(0);
+            String descricao = txtDescricao.getText();
+            double valor = Double.parseDouble(txtValor.getText().replace(",", "."));
+            
+            if (!validarCampos()) return;
+            
+            controller.atualizar(id, nome, tipo, descricao, valor);
+            JOptionPane.showMessageDialog(this, "Produto atualizado!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            
+            carregarProdutos();
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Erro: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
-
-
+    
     private void excluirProduto() {
-        try {
-            if (txtId.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Digite o ID do produto para excluir!", "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-
-            Long id = Long.parseLong(txtId.getText().trim());
-           
-            int confirm = JOptionPane.showConfirmDialog(this,
-                "Tem certeza que deseja excluir o produto ID " + id + "?",
-                "Confirmação de Exclusão",
-                JOptionPane.YES_NO_OPTION);
-           
-            if (confirm == JOptionPane.YES_OPTION) {
-                service.deletarProduto(id);
-                JOptionPane.showMessageDialog(this, "✅ Produto excluído com sucesso!");
-                listarTodos();
-                limparCampos();
-            }
-
-
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "❌ ID deve ser um número válido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "❌ Erro ao excluir produto: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        int linha = tabelaProdutos.getSelectedRow();
+        if (linha == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione um produto!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
         }
-    }
-
-
-    private void buscarProduto() {
-        try {
-            if (txtId.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Digite o ID do produto para buscar!", "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-
-            Long id = Long.parseLong(txtId.getText().trim());
-            Produto p = service.buscarPorId(id);
-
-
-            if (p != null) {
-                txtNome.setText(p.getNome());
-                txtPreco.setText(String.valueOf(p.getPreco()));
-                txtCategoria.setText(p.getCategoria());
-                txtDescricao.setText(p.getDescricao());
-                JOptionPane.showMessageDialog(this, "✅ Produto encontrado!");
-               
-                // Selecionar na tabela
-                for (int i = 0; i < tabela.getRowCount(); i++) {
-                    if (tabela.getValueAt(i, 0).equals(id)) {
-                        tabela.setRowSelectionInterval(i, i);
-                        tabela.scrollRectToVisible(tabela.getCellRect(i, 0, true));
-                        break;
-                    }
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "❌ Produto não encontrado!", "Aviso", JOptionPane.WARNING_MESSAGE);
-            }
-
-
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "❌ ID deve ser um número válido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "❌ Erro ao buscar produto: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-
-    private void listarTodos() {
-        try {
-            modeloTabela.setRowCount(0);
-            List<Produto> lista = service.buscarTodos();
-
-
-            if (lista.isEmpty()) {
-                modeloTabela.addRow(new Object[]{"-", "Nenhum produto cadastrado", "-", "-", "-"});
-            } else {
-                for (Produto p : lista) {
-                    modeloTabela.addRow(new Object[]{
-                        p.getIdProduto(),
-                        p.getNome(),
-                        String.format("R$ %.2f", p.getPreco()),
-                        p.getCategoria(),
-                        p.getDescricao()
-                    });
-                }
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "❌ Erro ao carregar produtos: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-
-    private void preencherCamposComSelecionado() {
-        int linhaSelecionada = tabela.getSelectedRow();
-        if (linhaSelecionada >= 0) {
+        
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Excluir este produto?",
+            "Confirmar",
+            JOptionPane.YES_NO_OPTION);
+        
+        if (confirm == JOptionPane.YES_OPTION) {
             try {
-                Object idObj = tabela.getValueAt(linhaSelecionada, 0);
-                if (idObj instanceof Long || (idObj instanceof String && !((String) idObj).equals("-"))) {
-                    Long id = Long.parseLong(idObj.toString());
-                    Produto p = service.buscarPorId(id);
-                   
-                    if (p != null) {
-                        txtId.setText(String.valueOf(p.getIdProduto()));
-                        txtNome.setText(p.getNome());
-                        txtPreco.setText(String.valueOf(p.getPreco()));
-                        txtCategoria.setText(p.getCategoria());
-                        txtDescricao.setText(p.getDescricao());
-                    }
-                }
-            } catch (Exception ex) {
-                // Ignora erros ao clicar em linha vazia
+                int id = (int) tableModel.getValueAt(linha, 0);
+                controller.excluir(id);
+                
+                JOptionPane.showMessageDialog(this, "Produto excluído!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                
+                limparFormulario();
+                carregarProdutos();
+                
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Erro: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
-
-
-    private void limparCampos() {
-        txtId.setText("");
-        txtNome.setText("");
-        txtPreco.setText("");
-        txtCategoria.setText("");
-        txtDescricao.setText("");
-        tabela.clearSelection();
+    
+    private boolean validarCampos() {
+        if (txtNome.getText().isEmpty() || txtDescricao.getText().isEmpty() || txtValor.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Preencha todos os campos!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        
+        try {
+            double valor = Double.parseDouble(txtValor.getText().replace(",", "."));
+            if (valor <= 0) {
+                JOptionPane.showMessageDialog(this, "Valor deve ser maior que zero!", "Erro", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Valor inválido!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        
+        return true;
     }
-
-
-    public static void main(String[] args) {
-        // Para teste direto
-        SwingUtilities.invokeLater(() -> {
-            // Em produção, isso viria da Main
-            com.tecdes.pedido.repository.ProdutoRepository repo =
-                new com.tecdes.pedido.repository.ProdutoRepositoryImpl();
-            ProdutoService service = new ProdutoService(repo);
-            new ProdutoView(service);
-        });
+    
+    private void preencherFormulario() {
+        int linha = tabelaProdutos.getSelectedRow();
+        if (linha != -1) {
+            txtNome.setText(tableModel.getValueAt(linha, 1).toString());
+            
+            String tipoStr = tableModel.getValueAt(linha, 2).toString();
+            for (int i = 0; i < cbxTipo.getItemCount(); i++) {
+                if (cbxTipo.getItemAt(i).startsWith(tipoStr)) {
+                    cbxTipo.setSelectedIndex(i);
+                    break;
+                }
+            }
+            
+            txtDescricao.setText(tableModel.getValueAt(linha, 3).toString());
+            
+            String valorStr = tableModel.getValueAt(linha, 4).toString();
+            valorStr = valorStr.replace("R$ ", "").trim();
+            txtValor.setText(valorStr);
+        }
+    }
+    
+    private void limparFormulario() {
+        txtNome.setText("");
+        txtDescricao.setText("");
+        txtValor.setText("");
+        cbxTipo.setSelectedIndex(0);
+        tabelaProdutos.clearSelection();
     }
 }
-
