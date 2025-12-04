@@ -32,13 +32,20 @@ public class PagamentoService {
     
     // Factory method para criar estratégia
     private PagamentoStrategy criarEstrategiaPagamento(String tipo) {
-        return switch (tipo.toLowerCase()) {
-            case "pix" -> new PixPagamento();
-            case "credito" -> new CartaoCreditoPagamento();
-            case "debito" -> new CartaoDebitoPagamento();
-            case "dinheiro" -> new DinheiroPagamento();
-            default -> null;
-        };
+        // Convertendo para minúsculas para case-insensitive
+        String tipoLower = tipo.toLowerCase();
+        
+        if (tipoLower.contains("pix")) {
+            return new PixPagamento();
+        } else if (tipoLower.contains("credito") || tipoLower.contains("crédito")) {
+            return new CartaoCreditoPagamento();
+        } else if (tipoLower.contains("debito") || tipoLower.contains("débito")) {
+            return new CartaoDebitoPagamento();
+        } else if (tipoLower.contains("dinheiro")) {
+            return new DinheiroPagamento();
+        }
+        
+        return null;
     }
     
     // Efetuar pagamento (marcar como pago no banco)

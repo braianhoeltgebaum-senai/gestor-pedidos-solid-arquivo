@@ -12,10 +12,11 @@ public class Avaliacao {
 
     public Avaliacao() {}
 
-    public Avaliacao(int idPedido, int idCliente, int vlNota) {
+    public Avaliacao(int idPedido, int idCliente, int vlNota, String dsAvaliacao) {
         this.idPedido = idPedido;
         this.idCliente = idCliente;
-        this.vlNota = vlNota;
+        setVlNota(vlNota);
+        setDsAvaliacao(dsAvaliacao);
     }
 
     // Getters e Setters
@@ -73,9 +74,27 @@ public class Avaliacao {
         this.vlNota = vlNota;
     }
 
+    // Método para compatibilidade com Service (getNota())
+    public int getNota() {
+        return vlNota;
+    }
+
+    // Método para exibir estrelas
+    public String getEstrelas() {
+        return "★".repeat(vlNota) + "☆".repeat(10 - vlNota);
+    }
+
+    // Método para saber se tem comentário
+    public boolean temComentario() {
+        return dsAvaliacao != null && !dsAvaliacao.trim().isEmpty();
+    }
+
     @Override
     public String toString() {
-        String estrelas = "★".repeat(vlNota) + "☆".repeat(10 - vlNota);
-        return "Avaliação #" + idAvaliacao + ": " + estrelas + " (" + vlNota + "/10)";
+        String base = "Avaliação #" + idAvaliacao + ": " + getEstrelas() + " (" + vlNota + "/10)";
+        if (temComentario()) {
+            return base + " - \"" + dsAvaliacao + "\"";
+        }
+        return base;
     }
 }
