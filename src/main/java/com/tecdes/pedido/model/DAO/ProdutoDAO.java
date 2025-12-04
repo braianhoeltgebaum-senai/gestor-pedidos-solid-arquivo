@@ -1,121 +1,285 @@
 package com.tecdes.pedido.model.DAO;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.tecdes.pedido.config.ConnectionFactory;
 import com.tecdes.pedido.model.entity.Produto;
+import java.sql.*;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class ProdutoDAO {
 
+
     // 🔹 INSERIR PRODUTO
     public void inserir(Produto produto) {
-        String sql = "INSERT INTO produto (nome, preco, categoria, descricao) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO T_SGP_PRODUTO (nm_produto, tp_produto, ds_produto, vl_produto) VALUES (?, ?, ?, ?)";
+       
         try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            stmt.setString(1, produto.getNome());
-            stmt.setDouble(2, produto.getPreco());
-            stmt.setString(3, produto.getCategoria());
-            stmt.setString(4, produto.getDescricao());
+
+            stmt.setString(1, produto.getNmProduto());
+            stmt.setString(2, String.valueOf(produto.getTpProduto())); // char para String
+            stmt.setString(3, produto.getDsProduto());
+            stmt.setBigDecimal(4, produto.getVlProduto());
             stmt.executeUpdate();
 
-            System.out.println("Produto inserido com sucesso!");
+
+            // Pega o ID gerado
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    produto.setIdProduto(rs.getInt(1)); // int, não Long
+                }
+            }
+
+
+            System.out.println("✅ Produto inserido com ID: " + produto.getIdProduto());
+
+
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao inserir produto.", e);
+            throw new RuntimeException("❌ Erro ao inserir produto: " + e.getMessage(), e);
         }
     }
 
-    // 🔹 BUSCAR TODOS
+
+    // 🔹 BUSCAR TODOS OS PRODUTOS
     public List<Produto> buscarTodos() {
-        String sql = "SELECT id_produto, nome, preco, categoria, descricao FROM produto";
+        String sql = "SELECT id_produto, nm_produto, tp_produto, ds_produto, vl_produto FROM T_SGP_PRODUTO ORDER BY nm_produto";
         List<Produto> produtos = new ArrayList<>();
+
 
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
+
             while (rs.next()) {
-                Produto p = new Produto();
-                p.setIdProduto(rs.getLong("id_produto")); // Mudou para getLong
-                p.setNome(rs.getString("nome"));
-                p.setPreco(rs.getDouble("preco"));
-                p.setCategoria(rs.getString("categoria"));
-                p.setDescricao(rs.getString("descricao"));
-                produtos.add(p);
+                produtos.add(mapResultSetToProduto(rs));
             }
 
+
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao buscar produtos.", e);
+            throw new RuntimeException("❌ Erro ao buscar produtos: " + e.getMessage(), e);
         }
+
 
         return produtos;
     }
 
-    // 🔹 BUSCAR POR ID
-    public Produto buscarPorId(Long id) {
-        String sql = "SELECT id_produto, nome, preco, categoria, descricao FROM produto WHERE id_produto = ?";
-        Produto produto = null;
 
+    // 🔹 BUSCAR PRODUTO POR ID
+    public Produto buscarPorId(int id) { // int, não Long
+        String sql = "SELECT id_produto, nm_produto, tp_produto, ds_produto, vl_produto FROM T_SGP_PRODUTO WHERE id_produto = ?";
+       
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setLong(1, id);
+
+            stmt.setInt(1, id);
+           
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    produto = new Produto();
-                    produto.setIdProduto(rs.getLong("id_produto")); // Mudou para getLong
-                    produto.setNome(rs.getString("nome"));
-                    produto.setPreco(rs.getDouble("preco"));
-                    produto.setCategoria(rs.getString("categoria"));
-                    produto.setDescricao(rs.getString("descricao"));
+                    return mapResultSetToProduto(rs);
                 }
             }
 
+
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao buscar produto por ID.", e);
+            throw new RuntimeException("❌ Erro ao buscar produto por ID: " + e.getMessage(), e);
         }
 
-        return produto;
+
+        return null;
     }
 
-    // 🔹 ATUALIZAR
+
+    // 🔹 BUSCAR PRODUTOS POR TIPO
+    public List<Produto> buscarPorTipo(char tipo) {
+        String sql = "SELECT id_produto, nm_produto, tp_produto, ds_produto, vl_produto FROM T_SGP_PRODUTO WHERE tp_produto = ? ORDER BY nm_produto";
+        List<Produto> produtos = new ArrayList<>();
+
+
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+
+            stmt.setString(1, String.valueOf(tipo));
+           
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    produtos.add(mapResultSetToProduto(rs));
+                }
+            }
+
+
+        } catch (SQLException e) {
+            throw new RuntimeException("❌ Erro ao buscar produtos por tipo: " + e.getMessage(), e);
+        }
+
+
+        return produtos;
+    }
+
+
+    // 🔹 BUSCAR PRODUTOS POR NOME (LIKE)
+    public List<Produto> buscarPorNome(String nome) {
+        String sql = "SELECT id_produto, nm_produto, tp_produto, ds_produto, vl_produto FROM T_SGP_PRODUTO WHERE nm_produto LIKE ? ORDER BY nm_produto";
+        List<Produto> produtos = new ArrayList<>();
+
+
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+
+            stmt.setString(1, "%" + nome + "%");
+           
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    produtos.add(mapResultSetToProduto(rs));
+                }
+            }
+
+
+        } catch (SQLException e) {
+            throw new RuntimeException("❌ Erro ao buscar produtos por nome: " + e.getMessage(), e);
+        }
+
+
+        return produtos;
+    }
+
+
+    // 🔹 ATUALIZAR PRODUTO
     public void atualizar(Produto produto) {
-        String sql = "UPDATE produto SET nome = ?, preco = ?, categoria = ?, descricao = ? WHERE id_produto = ?";
+        String sql = "UPDATE T_SGP_PRODUTO SET nm_produto = ?, tp_produto = ?, ds_produto = ?, vl_produto = ? WHERE id_produto = ?";
+
 
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                stmt.setString(1, produto.getNome());
-                stmt.setDouble(2, produto.getPreco());
-                stmt.setString(3, produto.getCategoria());
-                stmt.setString(4, produto.getDescricao());
-                stmt.setLong(5, produto.getIdProduto()); // Mudou para setLong
-                stmt.executeUpdate();
 
-            System.out.println("Produto atualizado com sucesso!");
-        } catch (SQLException e) {
-            throw new RuntimeException("Erro ao atualizar produto.", e);
-        }
-    }
-
-    // 🔹 DELETAR
-    public void deletar(Long id) {
-        String sql = "DELETE FROM produto WHERE id_produto = ?";
-
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setLong(1, id);
+            stmt.setString(1, produto.getNmProduto());
+            stmt.setString(2, String.valueOf(produto.getTpProduto()));
+            stmt.setString(3, produto.getDsProduto());
+            stmt.setBigDecimal(4, produto.getVlProduto());
+            stmt.setInt(5, produto.getIdProduto()); // int, não Long
             stmt.executeUpdate();
 
-            System.out.println("Produto deletado com sucesso!");
+
+            System.out.println("✅ Produto atualizado: " + produto.getIdProduto());
+
+
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao deletar produto.", e);
+            throw new RuntimeException("❌ Erro ao atualizar produto: " + e.getMessage(), e);
         }
     }
+
+
+    // 🔹 DELETAR PRODUTO
+    public void deletar(int id) { // int, não Long
+        // Primeiro verifica se o produto está em algum pedido
+        String verificarSql = "SELECT COUNT(*) FROM T_SGP_ITEM_PEDIDO WHERE id_produto = ?";
+        String deletarSql = "DELETE FROM T_SGP_PRODUTO WHERE id_produto = ?";
+
+
+        try (Connection conn = ConnectionFactory.getConnection()) {
+            conn.setAutoCommit(false); // Inicia transação
+           
+            try (PreparedStatement verificarStmt = conn.prepareStatement(verificarSql);
+                 PreparedStatement deletarStmt = conn.prepareStatement(deletarSql)) {
+               
+                // Verifica se produto está em uso
+                verificarStmt.setInt(1, id);
+                try (ResultSet rs = verificarStmt.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        throw new SQLException("Não é possível excluir: produto está em pedidos");
+                    }
+                }
+               
+                // Deleta o produto
+                deletarStmt.setInt(1, id);
+                int rowsAffected = deletarStmt.executeUpdate();
+               
+                conn.commit(); // Confirma transação
+               
+                if (rowsAffected > 0) {
+                    System.out.println("✅ Produto deletado: " + id);
+                } else {
+                    System.out.println("⚠️ Produto não encontrado: " + id);
+                }
+               
+            } catch (SQLException e) {
+                conn.rollback(); // Desfaz em caso de erro
+                throw e;
+            }
+           
+        } catch (SQLException e) {
+            throw new RuntimeException("❌ Erro ao deletar produto: " + e.getMessage(), e);
+        }
+    }
+
+
+    // 🔹 CONTAR TOTAL DE PRODUTOS
+    public int contarTotal() {
+        String sql = "SELECT COUNT(*) FROM T_SGP_PRODUTO";
+       
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+           
+        } catch (SQLException e) {
+            throw new RuntimeException("❌ Erro ao contar produtos: " + e.getMessage(), e);
+        }
+       
+        return 0;
+    }
+
+
+    // 🔹 BUSCAR PRODUTOS POR FAIXA DE PREÇO
+    public List<Produto> buscarPorFaixaPreco(BigDecimal precoMin, BigDecimal precoMax) {
+        String sql = "SELECT id_produto, nm_produto, tp_produto, ds_produto, vl_produto FROM T_SGP_PRODUTO WHERE vl_produto BETWEEN ? AND ? ORDER BY vl_produto";
+        List<Produto> produtos = new ArrayList<>();
+
+
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+
+            stmt.setBigDecimal(1, precoMin);
+            stmt.setBigDecimal(2, precoMax);
+           
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    produtos.add(mapResultSetToProduto(rs));
+                }
+            }
+
+
+        } catch (SQLException e) {
+            throw new RuntimeException("❌ Erro ao buscar produtos por faixa de preço: " + e.getMessage(), e);
+        }
+
+
+        return produtos;
+    }
+
+
+    // MÉTODO AUXILIAR: Converter ResultSet para Produto
+    private Produto mapResultSetToProduto(ResultSet rs) throws SQLException {
+        Produto produto = new Produto();
+        produto.setIdProduto(rs.getInt("id_produto"));
+        produto.setNmProduto(rs.getString("nm_produto"));
+        produto.setTpProduto(rs.getString("tp_produto").charAt(0)); // String para char
+        produto.setDsProduto(rs.getString("ds_produto"));
+        produto.setVlProduto(rs.getBigDecimal("vl_produto"));
+        return produto;
+    }
 }
+
