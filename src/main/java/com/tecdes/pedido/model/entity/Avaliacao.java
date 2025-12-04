@@ -1,66 +1,81 @@
 package com.tecdes.pedido.model.entity;
 
+import java.time.LocalDateTime;
 
 public class Avaliacao {
+    private int idAvaliacao;        // id_avaliacao INT
+    private int idPedido;           // id_pedido INT (FK)
+    private int idCliente;          // id_cliente INT (FK)
+    private String dsAvaliacao;     // ds_avaliacao VARCHAR(255) - pode ser null
+    private LocalDateTime dtAvaliacao = LocalDateTime.now();
+    private int vlNota;             // vl_nota INT (0-10)
 
-
-    private Long idAvaliacao;
-    private Long idPedido; // Referência ao pedido avaliado
-    private int nota;      // 1 a 5
-    private String comentario;
-
-
-    public Avaliacao(Long idPedido, int nota, String comentario) {
-        this.idPedido = idPedido;
-        this.nota = nota;
-        this.comentario = comentario;
-    }
-   
-    // Construtor padrão
     public Avaliacao() {}
 
+    public Avaliacao(int idPedido, int idCliente, int vlNota) {
+        this.idPedido = idPedido;
+        this.idCliente = idCliente;
+        this.vlNota = vlNota;
+    }
 
-    // -------------------------------------------------------------------
     // Getters e Setters
-    // -------------------------------------------------------------------
-
-
-    public Long getIdAvaliacao() {
+    public int getIdAvaliacao() {
         return idAvaliacao;
     }
 
-
-    public void setIdAvaliacao(Long idAvaliacao) {
+    public void setIdAvaliacao(int idAvaliacao) {
         this.idAvaliacao = idAvaliacao;
     }
 
-
-    public Long getIdPedido() {
+    public int getIdPedido() {
         return idPedido;
     }
 
-
-    public void setIdPedido(Long idPedido) {
+    public void setIdPedido(int idPedido) {
         this.idPedido = idPedido;
     }
 
-
-    public int getNota() {
-        return nota;
+    public int getIdCliente() {
+        return idCliente;
     }
 
-
-    public void setNota(int nota) {
-        this.nota = nota;
+    public void setIdCliente(int idCliente) {
+        this.idCliente = idCliente;
     }
 
-
-    public String getComentario() {
-        return comentario;
+    public String getDsAvaliacao() {
+        return dsAvaliacao;
     }
 
+    public void setDsAvaliacao(String dsAvaliacao) {
+        if (dsAvaliacao != null && dsAvaliacao.length() > 255) {
+            throw new IllegalArgumentException("Avaliação muito longa (máx 255 caracteres)");
+        }
+        this.dsAvaliacao = dsAvaliacao;
+    }
 
-    public void setComentario(String comentario) {
-        this.comentario = comentario;
+    public LocalDateTime getDtAvaliacao() {
+        return dtAvaliacao;
+    }
+
+    public void setDtAvaliacao(LocalDateTime dtAvaliacao) {
+        this.dtAvaliacao = dtAvaliacao;
+    }
+
+    public int getVlNota() {
+        return vlNota;
+    }
+
+    public void setVlNota(int vlNota) {
+        if (vlNota < 0 || vlNota > 10) {
+            throw new IllegalArgumentException("Nota deve ser entre 0 e 10");
+        }
+        this.vlNota = vlNota;
+    }
+
+    @Override
+    public String toString() {
+        String estrelas = "★".repeat(vlNota) + "☆".repeat(10 - vlNota);
+        return "Avaliação #" + idAvaliacao + ": " + estrelas + " (" + vlNota + "/10)";
     }
 }

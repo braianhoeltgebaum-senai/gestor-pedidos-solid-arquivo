@@ -1,10 +1,7 @@
 package com.tecdes.pedido.repository;
 
-
 import com.tecdes.pedido.model.entity.Pedido;
 import com.tecdes.pedido.model.entity.Cliente;
-
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,13 +11,10 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-
 public class PedidoRepositoryImpl implements PedidoRepository {
-
-
+    
     private final Map<Long, Pedido> database = new HashMap<>();
     private final AtomicLong idGenerator = new AtomicLong(0);
-
 
     @Override
     public Pedido save(Pedido pedido) {
@@ -28,40 +22,62 @@ public class PedidoRepositoryImpl implements PedidoRepository {
             pedido.setId(idGenerator.incrementAndGet());
         }
         database.put(pedido.getId(), pedido);
-        System.out.println("[DB] Pedido salvo/atualizado: ID " + pedido.getId());
+        System.out.println("[REPO] Pedido salvo em memória: ID " + pedido.getId());
         return pedido;
     }
-
 
     @Override
     public Optional<Pedido> findById(Long id) {
         return Optional.ofNullable(database.get(id));
     }
 
-
     @Override
     public List<Pedido> findAll() {
         return new ArrayList<>(database.values());
     }
-
 
     @Override
     public List<Pedido> findByCliente(Cliente cliente) {
         if (cliente == null) return new ArrayList<>();
        
         return database.values().stream()
-                .filter(p -> p.getCliente() != null && p.getCliente().getIdCliente().equals(cliente.getIdCliente()))
+                .filter(p -> p.getCliente() != null && 
+                           p.getCliente().getIdCliente() == cliente.getIdCliente())  // CORRIGIDO: usa == para int
                 .collect(Collectors.toList());
     }
 
-
     @Override
-    public List<Pedido> findByStatusAndDataHoraBetween(String status, LocalDateTime dataInicial, LocalDateTime dataFinal) {
+    public List<Pedido> findByStatusAndDataHoraBetween(String status, 
+            LocalDateTime dataInicial, LocalDateTime dataFinal) {
         return database.values().stream()
                 .filter(p -> p.getStatus().equalsIgnoreCase(status))
                 .filter(p -> p.getDataHora() != null &&
-                             !p.getDataHora().isBefore(dataInicial) &&
-                             !p.getDataHora().isAfter(dataFinal))
+                           !p.getDataHora().isBefore(dataInicial) &&
+                           !p.getDataHora().isAfter(dataFinal))
                 .collect(Collectors.toList());
+    }
+    
+    // Métodos adicionais úteis
+    @Override
+    public List<Pedido> findByStatus(String status) {
+        return database.values().stream()
+                .filter(p -> p.getStatus().equalsIgnoreCase(status))
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public long count() {
+        return database.size();
+    }
+    
+    @Override
+    public void deleteById(Long id) {
+        database.remove(id);
+        System.out.println("[REPO] Pedido deletado da memória: ID " + id);
+    }
+    
+    @Override
+    public boolean existsById(Long id) {
+        return database.containsKey(id);
     }
 }

@@ -1,138 +1,90 @@
 package com.tecdes.pedido.model.entity;
 
-
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 
 public class Pedido {
-   
-    // Atributos ajustados
-    private Long idPedido;
-    private LocalDateTime dataHora;
-    private String status;
-    private List<ItemPedido> produtos;
-    private Double valorTotal;
-    private String tipoPagamento;
-    private Cliente cliente;
-    private String observacoes;
+    private int idPedido;           // id_pedido INT
+    private char stPedido;          // st_pedido CHAR(1) - 'A', 'E', 'P', 'C'
+    private int nrPedido;           // nr_pedido INT
+    private int idCliente;          // id_cliente INT (FK)
+    private int idEndereco;         // id_endereco INT (FK)
+    private LocalDateTime dtPedido = LocalDateTime.now();
 
+    public Pedido() {}
 
-
-
-    // Construtor Padrão
-    public Pedido() {
-        this.dataHora = LocalDateTime.now();
-        this.status = "Recebido";
-        this.produtos = new ArrayList<>();
-        this.valorTotal = 0.0;
+    public Pedido(char stPedido, int nrPedido, int idCliente, int idEndereco) {
+        this.stPedido = stPedido;
+        this.nrPedido = nrPedido;
+        this.idCliente = idCliente;
+        this.idEndereco = idEndereco;
     }
 
-
-    // Método de cálculo
-    public void calcularTotal () {
-        double total = 0.0;
-       
-        if (this.produtos != null) {
-            for (ItemPedido item : this.produtos) {
-                // Assumindo que ItemPedido tem o método calcularTotal()
-                total += item.calcularTotal();
-            }
-        }
-       
-        this.valorTotal = total;
-    }
-
-
-    // -------------------------------------------------------------------
     // Getters e Setters
-    // -------------------------------------------------------------------
-
-
-    public Long getId() {
-        return idPedido;
-    }
-   
-    public Long getIdPedido() {
+    public int getIdPedido() {
         return idPedido;
     }
 
-
-    public void setId(Long idPedido) {
-        this.idPedido = idPedido;
-    }
-   
-    public void setIdPedido(Long idPedido) {
+    public void setIdPedido(int idPedido) {
         this.idPedido = idPedido;
     }
 
-
-    public LocalDateTime getDataHora() {
-        return dataHora;
+    public char getStPedido() {
+        return stPedido;
     }
 
-
-    public void setDataHora(LocalDateTime dataHora) {
-        this.dataHora = dataHora;
+    public void setStPedido(char stPedido) {
+        char status = Character.toUpperCase(stPedido);
+        if (status != 'A' && status != 'E' && status != 'P' && status != 'C') {
+            throw new IllegalArgumentException("Status inválido. Use: A (Aberto), E (Entregue), P (Pendente), C (Cancelado)");
+        }
+        this.stPedido = status;
     }
 
-
-    public String getStatus() {
-        return status;
+    public int getNrPedido() {
+        return nrPedido;
     }
 
-
-    public void setStatus(String status) {
-        this.status = status;
+    public void setNrPedido(int nrPedido) {
+        this.nrPedido = nrPedido;
     }
 
-
-    public List<ItemPedido> getProdutos() {
-        return produtos;
+    public int getIdCliente() {
+        return idCliente;
     }
 
-
-    public void setProdutos(List<ItemPedido> produtos) {
-        this.produtos = produtos;
+    public void setIdCliente(int idCliente) {
+        this.idCliente = idCliente;
     }
 
-
-    public Double getValorTotal() {
-        return valorTotal;
+    public int getIdEndereco() {
+        return idEndereco;
     }
 
-
-    public void setValorTotal(Double valorTotal) {
-        this.valorTotal = valorTotal;
+    public void setIdEndereco(int idEndereco) {
+        this.idEndereco = idEndereco;
     }
 
-
-    public String getTipoPagamento() {
-        return tipoPagamento;
+    public LocalDateTime getDtPedido() {
+        return dtPedido;
     }
 
-
-    public void setTipoPagamento(String tipoPagamento) {
-        this.tipoPagamento = tipoPagamento;
-    }
-   
-    public Cliente getCliente() {
-        return cliente;
+    public void setDtPedido(LocalDateTime dtPedido) {
+        this.dtPedido = dtPedido;
     }
 
-
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
+    public String getStatusDescricao() {
+        return switch(stPedido) {
+            case 'A' -> "Aberto";
+            case 'E' -> "Entregue";
+            case 'P' -> "Pendente";
+            case 'C' -> "Cancelado";
+            default -> "Desconhecido";
+        };
     }
 
-
-   
-    public String getObservacoes() {
-        return observacoes;
-    }
-   
-    public void setObservacoes(String observacoes) {
-        this.observacoes = observacoes;
+    @Override
+    public String toString() {
+        return "Pedido #" + nrPedido + " - Status: " + getStatusDescricao() + 
+               " - Cliente ID: " + idCliente + " - Data: " + dtPedido;
     }
 }
