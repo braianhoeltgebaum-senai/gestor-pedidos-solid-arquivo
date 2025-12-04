@@ -1,69 +1,54 @@
 package com.tecdes.pedido.repository;
 
-import com.tecdes.pedido.model.entity.Cliente;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger; // Mudado para Integer
+//import java.util.Optional;
+import com.tecdes.pedido.model.DAO.ClienteDAO;
+import com.tecdes.pedido.model.entity.Cliente;
 
 public class ClienteRepositoryImpl implements ClienteRepository {
     
-    private final Map<Integer, Cliente> database = new HashMap<>(); // Map<Integer, Cliente>
-    private final AtomicInteger idGenerator = new AtomicInteger(0); // AtomicInteger
+    private final ClienteDAO clienteDAO;
 
-    @Override
-    public Cliente save(Cliente cliente) {
-        if (cliente.getIdCliente() == 0) {
-            cliente.setIdCliente(idGenerator.incrementAndGet());
-        }
-       
-        database.put(cliente.getIdCliente(), cliente);
-        System.out.println("[REPO] Cliente salvo em memória: ID " + cliente.getIdCliente());
-        return cliente;
+    public ClienteRepositoryImpl() {
+        this.clienteDAO = new ClienteDAO();
     }
 
     @Override
-    public Optional<Cliente> findById(Long id) {
-        // Converte Long para Integer
-        return Optional.ofNullable(database.get(id.intValue()));
+    public void save(Cliente cliente) {
+        clienteDAO.inserir(cliente);
     }
 
     @Override
     public List<Cliente> findAll() {
-        return new ArrayList<>(database.values());
+        return clienteDAO.buscarTodos();
     }
 
     @Override
-    public void deleteById(Long id) {
-        database.remove(id.intValue());
-        System.out.println("[REPO] Cliente deletado da memória: ID " + id);
+    public Cliente findById(int id) {
+        Cliente cliente = clienteDAO.buscarPorId(id);
+        if (cliente == null) {
+            throw new RuntimeException("Cliente não encontrado com ID: " + id);
+        }
+        return cliente;
     }
 
     @Override
-    public boolean existsById(Long id) {
-        return database.containsKey(id.intValue());
+    public void update(Cliente cliente) {
+        clienteDAO.atualizar(cliente);
     }
 
     @Override
-    public Optional<Cliente> findByNome(String nome) {
-        return database.values().stream()
-                .filter(c -> c.getNmCliente().equalsIgnoreCase(nome))
-                .findFirst();
+    public void delete(int id) {
+        clienteDAO.deletar(id);
     }
-    
+
     @Override
-    public Optional<Cliente> findByEmail(String email) {
-        return database.values().stream()
-                .filter(c -> c.getDsEmail().equalsIgnoreCase(email))
-                .findFirst();
+    public boolean existsById(int id) {
+        return clienteDAO.buscarPorId(id) != null;
     }
-    
+
     @Override
-    public Optional<Cliente> findByTelefone(String telefone) {
-        return database.values().stream()
-                .filter(c -> c.getNrTelefone().equals(telefone))
-                .findFirst();
+    public Cliente findByEmail(String email) {
+        return clienteDAO.buscarPorEmail(email);
     }
 }

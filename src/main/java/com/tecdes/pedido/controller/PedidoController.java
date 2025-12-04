@@ -20,23 +20,48 @@ public class PedidoController {
         this.pedidoService = new PedidoService(pedidoRepo, this.produtoService);
     }
 
-    public Pedido finalizarPedido(Pedido pedido) {
-        return pedidoService.finalizarPedido(pedido);
+    // CORRIGIDO: Recebe parâmetros específicos
+    public Pedido criarPedido(int idCliente, int idEndereco, int numeroPedido) {
+        return pedidoService.criarPedido(idCliente, idEndereco, numeroPedido);
     }
 
-    public Pedido buscarPedidoPorId(Long id) {
+    // CORRIGIDO: Mudou de Long para int
+    public Pedido buscarPedidoPorId(int id) {
         return pedidoService.buscarPedidoPorId(id);
     }
 
     public List<Pedido> buscarTodosPedidos() {
         return pedidoService.buscarTodosPedidos();
     }
-
-    public Pedido atualizarStatus(Long id, String novoStatus) {
+    
+    // CORRIGIDO: Mudou de Long para int
+    public Pedido atualizarStatus(int id, char novoStatus) {
+        // Status: 'A' (Aberto), 'E' (Em preparo), 'P' (Pronto), 'C' (Concluído)
         return pedidoService.atualizarStatus(id, novoStatus);
     }
 
-    public Pedido cancelarPedido(Long id) {
+    // CORRIGIDO: Mudou de Long para int
+    public Pedido cancelarPedido(int id) {
         return pedidoService.cancelarPedido(id);
+    }
+    
+    // NOVO: Buscar pedidos por cliente
+    public List<Pedido> buscarPedidosPorCliente(int idCliente) {
+        return pedidoService.buscarPedidosPorCliente(idCliente);
+    }
+    
+    // NOVO: Buscar pedidos por status
+    public List<Pedido> buscarPedidosPorStatus(char status) {
+        return pedidoService.buscarPedidosPorStatus(status);
+    }
+    
+    // NOVO: Calcular total do pedido
+    public double calcularTotalPedido(int idPedido) {
+        return pedidoService.calcularTotalPedido(idPedido);
+    }
+    
+    // NOVO: Adicionar item ao pedido
+    public void adicionarItemPedido(int idPedido, int idProduto, int quantidade) {
+        pedidoService.adicionarItemPedido(idPedido, idProduto, quantidade);
     }
 }

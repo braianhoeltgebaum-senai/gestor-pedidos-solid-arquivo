@@ -1,83 +1,98 @@
 package com.tecdes.pedido.service;
 
-
 import java.util.List;
-
-
 import com.tecdes.pedido.model.entity.ItemPedido;
 import com.tecdes.pedido.repository.ItemPedidoRepository;
 import com.tecdes.pedido.repository.ItemPedidoRepositoryImpl;
 
-
 public class ItemPedidoService {
 
+    private final ItemPedidoRepository repository;
 
-    private final ItemPedidoRepository repository = new ItemPedidoRepositoryImpl();
-
+    // CORRIGIDO: Inicialização no construtor
+    public ItemPedidoService() {
+        this.repository = new ItemPedidoRepositoryImpl();
+    }
 
     public void salvar(ItemPedido item) {
-        if (item.getQuantidade() <= 0) {
-            throw new IllegalArgumentException("Quantidade inválida.");
+        if (item.getQtProduto() <= 0) { // MUDOU: getQuantidade() → getQtProduto()
+            throw new IllegalArgumentException("Quantidade deve ser maior que zero.");
+        }
+        if (item.getIdPedido() <= 0) {
+            throw new IllegalArgumentException("ID do pedido é obrigatório.");
+        }
+        if (item.getIdProduto() <= 0) {
+            throw new IllegalArgumentException("ID do produto é obrigatório.");
         }
         repository.save(item);
     }
-   
-    public ItemPedido adicionarItemAoPedido(Long idPedido, ItemPedido itemPedido) {
-        try {
-            // Configura o ID do pedido no item
-            itemPedido.setIdPedido(idPedido);
-           
-            // Validações adicionais
-            if (itemPedido.getProduto() == null) {
-                throw new IllegalArgumentException("Produto é obrigatório.");
-            }
-           
-            if (itemPedido.getQuantidade() <= 0) {
-                throw new IllegalArgumentException("Quantidade deve ser maior que zero.");
-            }
-           
-            // Salva o item (save() retorna void)
-            repository.save(itemPedido);
-           
-            // Este já tem o ID do pedido e foi validado
-            return itemPedido;
-           
-        } catch (Exception e) {
-            throw new RuntimeException("Erro ao adicionar item ao pedido: " + e.getMessage(), e);
+    
+    public void adicionarItem(int idPedido, int idProduto, int quantidade) {
+        ItemPedido item = new ItemPedido();
+        item.setQtProduto(quantidade); // MUDOU: setQuantidade() → setQtProduto()
+        item.setIdPedido(idPedido);
+        item.setIdProduto(idProduto);
+        salvar(item);
+    }
+
+    public ItemPedido buscarPorId(int id) {
+        ItemPedido item = repository.findById(id);
+        if (item == null) {
+            throw new RuntimeException("Item não encontrado com ID: " + id);
         }
+        return item;
     }
-
-
-    public ItemPedido buscarPorId(Long id) {
-        return repository.findById(id);
-    }
-
 
     public List<ItemPedido> listarTodos() {
         return repository.findAll();
     }
-
+    
+    public List<ItemPedido> listarPorPedido(int idPedido) {
+        return repository.findByPedido(idPedido);
+    }
 
     public void atualizar(ItemPedido item) {
+        // Verifica se item existe
+        buscarPorId(item.getIdItem());
+        repository.update(item);
+    }
+    
+    public void atualizarQuantidade(int idItem, int novaQuantidade) {
+        if (novaQuantidade <= 0) {
+            throw new IllegalArgumentException("Quantidade deve ser maior que zero");
+        }
+        ItemPedido item = buscarPorId(idItem);
+        item.setQtProduto(novaQuantidade); // MUDOU: setQuantidade() → setQtProduto()
         repository.update(item);
     }
 
-
-    public void deletar(Long id) {
+    public void deletar(int id) {
+        // Verifica se item existe
+        buscarPorId(id);
         repository.delete(id);
     }
-   
-    public List<ItemPedido> buscarItensPorPedido(Long idPedido) {
-        try {
-            List<ItemPedido> todosItens = listarTodos();
-            if (todosItens == null) {
-                return List.of();
-            }
-            return todosItens.stream()
-                .filter(item -> item != null && idPedido.equals(item.getIdPedido()))
-                .toList();
-        } catch (Exception e) {
-            throw new RuntimeException("Erro ao buscar itens do pedido: " + e.getMessage(), e);
+    
+    public List<ItemPedido> buscarItensPorPedido(int idPedido) {
+        return repository.findByPedido(idPedido);
+    }
+    
+    public void limparItensPedido(int idPedido) {
+        List<ItemPedido> itens = listarPorPedido(idPedido);
+        for (ItemPedido item : itens) {
+            deletar(item.getIdItem());
         }
+    }
+    
+    // REMOVIDO: calcularSubtotal (precisa de ProdutoService)
+    // Isso deve ser feito em um Service mais alto (PedidoService)
+    
+    // NOVO: Verificar se item existe
+    public boolean itemExiste(int idItem) {
+        return repository.existsById(idItem);
+    }
+    
+    // NOVO: Contar itens de um pedido
+    public int contarItensPorPedido(int idPedido) {
+        return listarPorPedido(idPedido).size();
     }
 }
